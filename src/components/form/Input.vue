@@ -1,38 +1,27 @@
 <template>
-  <div>
-    <label
-      v-if="label"
-      class="block mb-2 text-sm font-bold text-gray-700"
-      :for="id"
-    >
-      {{ label }}
-    </label>
-    <input
-      :id="id"
-      class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
-      :type="type || 'text'"
-      :placeholder="placeholder || ''"
-      v-on:input="$emit('input', $event.target.value)"
-    />
-  </div>
+  <input
+    class="form-input w-full"
+    :class="{ 'border-red-500': hasError }"
+    :type="type || 'text'"
+    :placeholder="placeholder || ''"
+    :value="defaultValue"
+    @input="handleInput"
+    @blur="handleBlur"
+  />
 </template>
 
 <script>
+import FormItem from '@/mixins/formItem'
 export default {
   name: 'z-input',
-  props: ['placeholder', 'value', 'type', 'label'],
-  model: {
-    prop: 'value',
-    event: 'input'
-  },
+  mixins: [FormItem],
+  props: ['placeholder', 'value', 'type'],
   data() {
     return {
       id: ''
     }
   },
-  mounted() {
-    this.id = _.uniqueId('input')
-  }
+  mounted() {}
 }
 </script>
 

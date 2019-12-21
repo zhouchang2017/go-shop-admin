@@ -2,6 +2,10 @@
 
 import Vue from 'vue'
 import axios from 'axios'
+import { Message } from 'element-ui'
+import store from '@/store'
+import { getToken } from '@/utils/auth'
+import router from '@/router'
 
 // Full config:  https://github.com/axios/axios#request-config
 // axios.defaults.baseURL = process.env.baseURL || process.env.apiUrl || '';
@@ -19,6 +23,10 @@ const _axios = axios.create(config)
 _axios.interceptors.request.use(
   function(config) {
     // Do something before request is sent
+    if (store.getters.token) {
+      // 每次请求携带token
+      config.headers['Authorization'] = `Bearer ${getToken()}`
+    }
     return config
   },
   function(error) {
@@ -33,8 +41,36 @@ _axios.interceptors.response.use(
     // Do something with response data
     return response
   },
-  function(error) {
+  async function(error) {
     // Do something with response error
+    const { status } = error.response
+
+    switch (status) {
+      case 401:
+        Message({
+          message: error.response.statusText,
+          type: 'error',
+          duration: 5 * 1000
+        })
+        await store.dispatch('auth/resetToken')
+        // 跳转登录页
+        router.replace({ name: 'login' }).catch(err => {})
+        break
+      case 403:
+        Message({
+          message: error.response.statusText,
+          type: 'error',
+          duration: 5 * 1000
+        })
+        return
+      case 500:
+        Message({
+          message: error.response.data.message,
+          type: 'error',
+          duration: 5 * 1000
+        })
+        return
+    }
     return Promise.reject(error)
   }
 )
@@ -57,5 +93,4 @@ Plugin.install = function(Vue, options) {
 }
 
 Vue.use(Plugin)
-
 export default Plugin

@@ -1,8 +1,5 @@
 <template>
-  <div
-    id="app"
-    class="font-mono antialiased min-h-screen w-full min-h-full bg-gray-100"
-  >
+  <div id="app" class="">
     <router-view />
   </div>
 </template>

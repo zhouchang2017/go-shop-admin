@@ -1,0 +1,184 @@
+@tailwind base;
+
+@tailwind components;
+
+.z-100 {
+  z-index: 100;
+}
+
+.z-200 {
+  z-index: 200;
+}
+@responsive {
+  .z-200 {
+    z-index: 200;
+  }
+}
+
+@responsive {
+  .top-16 {
+    top: 4rem;
+  }
+}
+
+nav .active {
+  @apply bg-gray-200;
+}
+
+nav .active svg {
+  @apply text-gray-700;
+}
+
+nav .active span > span {
+  @apply text-gray-900;
+}
+
+button:focus {
+  @apply outline-none;
+}
+// card component
+.card {
+  @apply bg-white rounded-lg shadow-lg w-full;
+}
+.card-head {
+  @apply bg-gray-100 flex p-3 rounded-t-lg;
+}
+.card-head__title {
+  @apply uppercase font-medium text-gray-700;
+}
+.card-body {
+  @apply p-6;
+}
+.card-item {
+  @apply py-2 border-b px-3;
+}
+.card .card-item:last-child {
+  @apply border-none;
+}
+.card-item__label {
+  @apply text-gray-600;
+}
+.card-item__content {
+  @apply text-gray-800;
+}
+.card-foot {
+  @apply bg-gray-100 flex p-3 rounded-b-lg;
+}
+
+.ease-in {
+  transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
+}
+
+.ease-out {
+  transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+}
+
+.ease-in-out {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+.transition-fastest {
+  transition-duration: 75ms;
+}
+
+.transition-faster {
+  transition-duration: 0.1s;
+}
+
+.transition-fast {
+  transition-duration: 0.15s;
+}
+
+.transition-medium {
+  transition-duration: 0.2s;
+}
+
+.transition-slow {
+  transition-duration: 0.3s;
+}
+
+.transition-slower {
+  transition-duration: 0.5s;
+}
+
+.transition-slowest {
+  transition-duration: 0.7s;
+}
+
+html {
+  height: 100%;
+  width: 100%;
+}
+body {
+  @apply antialiased font-sans bg-gray-200;
+  height: 100%;
+  width: 100%;
+}
+
+table thead tr th {
+  @apply bg-gray-100 border-b uppercase font-bold text-gray-600 p-3;
+}
+
+table tbody tr td {
+  @apply p-3 text-gray-600 border-b;
+}
+
+.required:before {
+  content: '*';
+  @apply text-red-500;
+}
+
+/* 改变主题色变量 */
+$--color-primary: #4299e1 !default;
+
+/* 改变 icon 字体路径变量，必需 */
+$--font-path: '~element-ui/lib/theme-chalk/fonts';
+$--table-header-background-color: theme('colors.gray-100');
+$--table-header-font-color: theme('colors.gray-600');
+$--table-font-color: theme('colors.gray-600');
+// dialog
+$--dialog-box-shadow: theme('boxShadow.lg');
+@import '~element-ui/packages/theme-chalk/src/index';
+
+.el-dialog {
+  @apply rounded-lg;
+}
+.el-dialog__footer {
+  @apply bg-gray-100 rounded-b-lg;
+}
+.el-input__prefix {
+  @apply flex items-center;
+}
+.el-form-item__label {
+  @apply text-gray-600 font-mono;
+}
+
+.full .el-form-item__content {
+  @apply w-4/5;
+}
+
+.el-loading-spinner {
+  @apply flex justify-center;
+}
+// md
+@media (min-width: 768px) {
+  .el-form-item {
+    display: flex;
+  }
+  .el-form-item__label {
+    @apply w-1/5;
+  }
+  .el-form-item__content {
+    @apply w-3/5;
+  }
+  .card-item {
+    @apply flex items-center;
+  }
+  .card-item__label {
+    @apply w-1/5;
+  }
+  .card-item__content {
+    @apply w-4/5;
+  }
+}
+
+@tailwind utilities;
