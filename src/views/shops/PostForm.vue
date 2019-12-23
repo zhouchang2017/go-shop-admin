@@ -198,7 +198,8 @@ export default {
         obj.addrPhone = phone
         obj.addr = addr
       }
-      this.$set(this, 'resource', obj)
+      
+      this.$set(this, 'resource', Object.assign({}, this.resource, obj))
     }
   },
   created () {

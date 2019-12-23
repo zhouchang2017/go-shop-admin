@@ -1,5 +1,5 @@
 <template>
-  <Dropdown v-show="hasSlots" placement="r" class="w-full">
+  <Dropdown v-show="hasSlots" placement="r" class="w-full" :z-index="zIndex">
     <div slot="trigger" class="hover:text-blue-500">
       <IIcon type="i-filter" />
     </div>
@@ -14,6 +14,7 @@
 
 <script>
 export default {
+  props: ['z-index'],
   components: {
     Dropdown: () => import('@/components/Dropdown')
   },

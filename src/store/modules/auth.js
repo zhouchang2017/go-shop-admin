@@ -48,6 +48,21 @@ const actions = {
     })
   },
 
+  // get user info
+  getInfo({ commit }) {
+    return new Promise((resolve, reject) => {
+      getInfo()
+        .then(response => {
+          const { data } = response
+          commit('SET_USER', data)
+          resolve(data)
+        })
+        .catch(error => {
+          reject(error)
+        })
+    })
+  },
+
   // remove token
   resetToken({ commit }) {
     return new Promise(resolve => {

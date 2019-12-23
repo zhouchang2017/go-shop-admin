@@ -89,7 +89,7 @@ router.beforeEach(async (to, from, next) => {
       } else {
         try {
           // 获取用户信息
-          // await store.dispatch('user/getInfo')
+          await store.dispatch('auth/getInfo')
           // 获取用户路由表
           const accessRouters = await store.dispatch('loadRouters')
           // 动态追加路由

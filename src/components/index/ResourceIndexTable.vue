@@ -4,10 +4,37 @@
       class="flex rounded-t-lg bg-white items-center py-3 border-b border-gray-200"
     >
       <div class="flex items-center w-full md:w-3/5 pl-3 mr-10">
-        <z-search-input v-model.trim="search" />
+        <z-search-input
+          :placeholder="searchInputPlaceholder"
+          v-model.trim="search"
+        />
       </div>
       <div class="flex items-center ml-auto pr-3 text-gray-500">
-        <FilterBox>
+        <!-- Lenses -->
+        <div class="flex mr-3" v-show="hasLenses">
+          <Dropdown placement="r" class="w-full">
+            <button
+              slot="trigger"
+              slot-scope="isOpen"
+              @click="isOpen = true"
+              class="hidden sm:flex sm:items-center sm:w-full outline-none focus:outline-none"
+            >
+              <span class="text-sm font-medium text-gray-500">Lenses</span>
+              <svg
+                class="ml-1 h-6 w-6 fill-current text-gray-400 lg:ml-auto"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M7.293 9.293a1 1 0 011.414 0L12 12.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                ></path>
+              </svg>
+            </button>
+            <div class="w-64 bg-white rounded-lg shadow-lg overflow-hidden">
+              <slot name="lenses" />
+            </div>
+          </Dropdown>
+        </div>
+        <FilterBox zIndex="100">
           <slot name="filters" v-bind:filters.sync="filters" />
           <FilterBoxItem name="Trashed">
             <el-checkbox v-model="withTrashed">显示软删除资源</el-checkbox>
@@ -19,13 +46,13 @@
       :ref="tableName"
       v-loading="loading"
       :data="resources"
-      row-key="id"
+      :row-key="rowKey"
       tooltip-effect="dark"
+      v-on:sort-change="sortChange"
     >
       <el-table-column v-if="selection" type="selection" width="55" />
       <el-table-column v-if="showId" label="Id" prop="data.id" />
       <slot />
-
       <el-table-column
         v-if="showCreatedAt"
         label="创建时间"
@@ -37,7 +64,6 @@
           <span>{{ scope.row.data.created_at | timeStr }}</span>
         </template>
       </el-table-column>
-
       <el-table-column
         v-if="showUpdatedAt"
         label="更新时间"
@@ -49,7 +75,6 @@
           <span>{{ scope.row.data.updated_at | timeStr }}</span>
         </template>
       </el-table-column>
-
       <el-table-column
         v-if="currentTrashed"
         label="删除时间"
@@ -61,10 +86,9 @@
           <span>{{ scope.row.data.deleted_at | timeStr }}</span>
         </template>
       </el-table-column>
-
       <!-- Resource Action -->
       <el-table-column
-        v-if="!hiddenAction"
+        v-if="showActions"
         label="Actions"
         align="right"
         class-name="small-padding fixed-width"
@@ -128,8 +152,7 @@
         :page-size="perPage"
         layout="total, sizes, prev, pager, next, jumper"
         :total="resourceTotal"
-      >
-      </el-pagination>
+      ></el-pagination>
     </div>
   </div>
 </template>
@@ -154,7 +177,8 @@ export default {
   ],
   components: {
     FilterBox: () => import('@/components/FilterBox'),
-    FilterBoxItem: () => import('@/components/FilterBoxItem')
+    FilterBoxItem: () => import('@/components/FilterBoxItem'),
+    Dropdown: () => import('@/components/Dropdown')
   },
   props: {
     // 已选定项
@@ -165,6 +189,11 @@ export default {
     tableName: {
       type: String,
       default: 'selectionTable'
+    },
+    // 表格行key
+    rowKey: {
+      type: [String, Function],
+      default: 'id'
     },
     searchPlaceholder: String, // 搜索框提示文字
     selection: Boolean, // 是否开启首列选择框
@@ -210,7 +239,8 @@ export default {
     return {
       loading: false,
       // 资源列表
-      resources: []
+      resources: [],
+      isOpen: false
     }
   },
   methods: {
@@ -225,7 +255,6 @@ export default {
               this.resourceTotal = 0
               this.loading = false
             } else {
-              this.resources = res.data.data
               this.$set(this, 'resources', res.data.data)
               this.resourceTotal = res.data.pagination.total
               this.loading = false
@@ -342,6 +371,11 @@ export default {
         })
         .catch(() => {})
     },
+    // 排序方法
+    sortChange({ column, prop, order }) {
+      let field = !_.isNil(column.formatter) ? column.formatter() : prop
+      this.setSort({ prop: field, order })
+    },
 
     tableRowClassName({ row }) {
       return this.items.includes(row.data.id) ? 'selection-row' : ''
@@ -371,7 +405,7 @@ export default {
           _.get(this, 'resources', []).forEach(row => {
             this.$refs[this.tableName].toggleRowSelection(
               row,
-              this.items.includes(row.data.id)
+              this.items.includes(_.get(row, 'data.id'))
             )
           })
         } else {
@@ -405,6 +439,20 @@ export default {
         : this.resourceLabel
         ? `请输入${this.resourceLabel}名称`
         : '请输入关键词'
+    },
+
+    hasLenses() {
+      return _.get(this, '$slots.lenses', []).length > 0
+    },
+
+    // 是否显示action列
+    showActions() {
+      return (
+        !!this.deleteResourceFun ||
+        !!this.restoreResourceFun ||
+        !!this.detailResourceRouteName ||
+        (!!this.editResourceRouteName && !hiddenAction)
+      )
     }
   },
   mounted() {

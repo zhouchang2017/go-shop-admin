@@ -2,7 +2,7 @@
   <div class="flex flex-col">
     <div class="w-full flex items-center mb-3">
       <div class="font-bold text-2xl text-gray-700 uppercase">{{ title }}</div>
-      <div class="ml-auto">
+      <div class="ml-auto" v-if="$route.meta.AuthorizedToCreate">
         <router-link
           :to="{ name: $route.meta.CreateRouterName }"
           class="inline-flex cursor-pointer text-center items-center px-3 py-2 font-semibold text-white bg-blue-500 rounded-lg hover:opacity-75 focus:outline-none focus:shadow-outline"

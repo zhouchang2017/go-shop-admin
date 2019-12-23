@@ -5,18 +5,11 @@ export default {
 
   methods: {
     filtersChanged() {
-      this.updateQueryString(this.optionsToBase64())
+      this.updateQueryString({ filters: this.toBase64() })
     },
 
-    optionsToBase64() {
-      let cloneFilter = _.cloneDeep(this.filters)
-      if (!_.isEmpty(this.filters.options)) {
-        console.log(JSON.stringify(cloneFilter.options))
-        cloneFilter.options = btoa(
-          encodeURIComponent(JSON.stringify(cloneFilter.options))
-        )
-      }
-      return cloneFilter
+    toBase64() {
+      return btoa(encodeURIComponent(JSON.stringify(this.filters)))
     },
     b64Decode(str) {
       return JSON.parse(decodeURIComponent(atob(str)))
@@ -32,17 +25,11 @@ export default {
 
   computed: {
     currentFilters() {
-      let filters = {}
-      _.each(this.filters, (v, k) => {
-        if (k === 'options') {
-          filters[k] = !_.isEmpty(this.$route.query[k])
-            ? this.b64Decode(this.$route.query[k])
-            : v
-        } else {
-          filters[k] = this.$route.query[k] || v
-        }
-      })
-      return filters
+      let filters = _.get(this, '$route.query.filters')
+      if (_.isNil(filters)) {
+        return this.filters
+      }
+      return this.b64Decode(filters)
     }
   },
 

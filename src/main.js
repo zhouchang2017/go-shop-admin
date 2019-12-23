@@ -9,7 +9,7 @@ import router from './router'
 import store from './store'
 import './assets/tailwind.scss'
 import './filters'
-
+import Global from './mixins/Global'
 Vue.config.productionTip = false
 
 const forms = require.context(`@/components/form`, true, /\.vue$/i)
@@ -38,7 +38,7 @@ automaticGlobalRegistration(forms, 'z')
 automaticGlobalRegistration(icons, 'i')
 
 Vue.use(Element)
-
+Vue.mixin(Global)
 new Vue({
   router,
   store,

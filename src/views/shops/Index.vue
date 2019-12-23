@@ -2,7 +2,7 @@
   <div class="flex flex-col">
     <div class="w-full flex items-center mb-3">
       <div class="font-bold text-2xl text-gray-700 uppercase">{{ title }}</div>
-      <div class="ml-auto">
+      <div class="ml-auto" v-if="$route.meta.AuthorizedToCreate">
         <router-link
           :to="{ name: $route.meta.CreateRouterName }"
           class="inline-flex cursor-pointer text-center items-center px-3 py-2 font-semibold text-white bg-blue-500 rounded-lg hover:opacity-75 focus:outline-none focus:shadow-outline"
@@ -22,10 +22,7 @@
       :detailResourceRouteName="$route.meta.DetailRouterName"
       :editResourceRouteName="$route.meta.EditRouterName"
     >
-      <template
-        slot="filters"
-        slot-scope="{ filters }"
-      >
+      <template slot="filters" slot-scope="{ filters }">
         <filter-box-item name="创建时间">
           <el-date-picker
             size="mini"
@@ -39,10 +36,7 @@
           </el-date-picker>
         </filter-box-item>
       </template>
-      <el-table-column
-        label="名称"
-        prop="data.name"
-      />
+      <el-table-column label="名称" prop="data.name" />
     </index-resource-table>
   </div>
 </template>
@@ -61,7 +55,7 @@ export default {
       import('@/components/index/ResourceIndexTable'),
     'filter-box-item': () => import('@/components/FilterBoxItem')
   },
-  data () {
+  data() {
     return {}
   },
   methods: {
@@ -71,7 +65,7 @@ export default {
     restoreResource
   },
   computed: {
-    title () {
+    title() {
       return _.get(this.$route, 'meta.Title', this.$route.name)
     }
   }

@@ -69,7 +69,7 @@
       >
         <div
           class="card-body"
-          v-if="resource.images.length > 0"
+          v-if="hasImages"
         >
           <ImageList :images="resource.images" />
         </div>
@@ -265,6 +265,11 @@ export default {
     deleteResource,
     forceDeleteResource,
     restoreResource
+  },
+  computed:{
+    hasImages(){
+      return _.get(this,'resource.images',[]).length > 0
+    }
   }
 }
 </script>

@@ -1,7 +1,7 @@
 <template>
-  <div class="flex">
+  <div class="flex flex-wrap">
     <div
-      class="w-24 h-24 relative hover-trigger rounded overflow-hidden mr-2"
+      class="w-24 h-24 relative hover-trigger rounded overflow-hidden mr-2 mb-2"
       v-for="(image, index) in images"
       :key="index"
     >
