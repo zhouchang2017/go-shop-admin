@@ -152,8 +152,6 @@
 </template>
 
 <script>
-import { aggregate } from '@/api/inventory'
-
 import { getResources as getShops } from '@/api/shop'
 import InteractsWithQueryString from '@/mixins/InteractsWithQueryString'
 import Paginatable from '@/mixins/Paginatable'
@@ -161,6 +159,7 @@ import PerformsSearches from '@/mixins/PerformsSearches'
 import Sortable from '@/mixins/Sortable'
 import Filterable from '@/mixins/Filterable'
 import Inventory from './inventory'
+import Lens from '@/mixins/Lens'
 export default {
   name: 'resource-aggregate-page',
   mixins: [
@@ -169,7 +168,8 @@ export default {
     PerformsSearches,
     Sortable,
     Filterable,
-    Inventory
+    Inventory,
+    Lens
   ],
   components: {
     FilterBox: () => import('@/components/FilterBox'),
@@ -215,7 +215,7 @@ export default {
     // 获取列表方法
     fetchResources(query = {}) {
       this.loading = true
-      aggregate(this.mergeQueryString(query))
+      this.fetch(this.mergeQueryString(query))
         .then(res => {
           if (res.status === 200) {
             if (_.isNil(res.data.data)) {

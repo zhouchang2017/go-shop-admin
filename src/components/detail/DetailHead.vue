@@ -11,6 +11,7 @@
       </span>
     </el-dialog>
     <div class="ml-auto flex items-center">
+      <slot />
       <el-button
         title="恢复"
         @click="open(1)"

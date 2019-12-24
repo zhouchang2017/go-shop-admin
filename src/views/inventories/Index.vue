@@ -2,11 +2,11 @@
   <div class="flex flex-col">
     <div class="w-full flex items-center mb-3">
       <div class="font-bold text-2xl text-gray-700 uppercase">{{ title }}</div>
-      <div class="ml-auto" v-if="$route.meta.AuthorizedToCreate">
+      <div class="ml-auto" v-if="$route.meta.AuthorizedToAction">
         <router-link
-          :to="{ name: $route.meta.CreateRouterName }"
+          :to="{ name: $route.meta.ActionRouterName }"
           class="inline-flex cursor-pointer text-center items-center px-3 py-2 font-semibold text-white bg-blue-500 rounded-lg hover:opacity-75 focus:outline-none focus:shadow-outline"
-          >{{ $route.meta.CreateButtonText }}</router-link
+          >{{ $route.meta.ActionButtonText }}</router-link
         >
       </div>
     </div>
@@ -26,10 +26,17 @@
         <div class="py-1">
           <router-link
             v-for="lense in lenses"
-            :key="lense.name"
-            :to="{ name: lense.routerName }"
+            :key="lense.title"
+            :to="{ name: lense.router_name }"
             class="block px-6 py-3 leading-tight hover:bg-gray-200"
-            >{{ lense.name }}</router-link
+            >{{ lense.title }}</router-link
+          >
+          <router-link
+            v-for="link in links"
+            :key="link.title"
+            :to="{ name: link.router_name }"
+            class="block px-6 py-3 leading-tight hover:bg-gray-200"
+            >{{ link.title }}</router-link
           >
         </div>
       </template>
@@ -103,10 +110,11 @@ import {
   restoreResource
 } from '@/api/inventory'
 import Inventory from './inventory'
+import Index from '@/mixins/Index'
 import { getResources as getShops } from '@/api/shop'
 export default {
   name: 'resource-index-page',
-  mixins: [Inventory],
+  mixins: [Inventory, Index],
   components: {
     'index-resource-table': () =>
       import('@/components/index/ResourceIndexTable'),
@@ -140,9 +148,6 @@ export default {
   computed: {
     title() {
       return _.get(this.$route, 'meta.Title', this.$route.name)
-    },
-    lenses() {
-      return _.get(this.$route, 'meta.Lenses', [])
     }
   },
   mounted() {

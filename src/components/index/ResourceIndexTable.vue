@@ -19,7 +19,9 @@
               @click="isOpen = true"
               class="hidden sm:flex sm:items-center sm:w-full outline-none focus:outline-none"
             >
-              <span class="text-sm font-medium text-gray-500">Lenses</span>
+              <span class="text-sm font-bold text-gray-500 uppercase"
+                >More</span
+              >
               <svg
                 class="ml-1 h-6 w-6 fill-current text-gray-400 lg:ml-auto"
                 viewBox="0 0 24 24"
@@ -36,7 +38,7 @@
         </div>
         <FilterBox zIndex="100">
           <slot name="filters" v-bind:filters.sync="filters" />
-          <FilterBoxItem name="Trashed">
+          <FilterBoxItem name="Trashed" v-if="filterWithTrashed">
             <el-checkbox v-model="withTrashed">显示软删除资源</el-checkbox>
           </FilterBoxItem>
         </FilterBox>
@@ -49,6 +51,8 @@
       :row-key="rowKey"
       tooltip-effect="dark"
       v-on:sort-change="sortChange"
+      @select="handleSelection"
+      @select-all="handleSelectionAll"
     >
       <el-table-column v-if="selection" type="selection" width="55" />
       <el-table-column v-if="showId" label="Id" prop="data.id" />
@@ -207,6 +211,10 @@ export default {
     searchable: Boolean, // 是否允许搜索
     detailResourceRouteName: String, // 详情页路由名称
     editResourceRouteName: String, // 编辑页路由名称
+    filterWithTrashed: {
+      type: Boolean,
+      default: true
+    },
     resourceName: {
       type: String,
       required: true
@@ -256,6 +264,7 @@ export default {
               this.loading = false
             } else {
               this.$set(this, 'resources', res.data.data)
+              this.$emit('on-load-resources', res.data.data)
               this.resourceTotal = res.data.pagination.total
               this.loading = false
             }
@@ -381,20 +390,20 @@ export default {
       return this.items.includes(row.data.id) ? 'selection-row' : ''
     },
     handleSelection(selections, row) {
-      let item = selections.find(item => item.id === row.data.id)
-      this.$emit('change', { checked: !_.isNil(item), obj: row })
+      let item = selections.find(item => item.data.id === row.data.id)
+      this.$emit('change', { checked: !_.isNil(item), obj: row.data })
     },
     handleSelectionAll(selection) {
       if (selection.length === 0) {
         // 清空
         this.resources.forEach(item => {
-          this.$emit('change', { checked: false, obj: item })
+          this.$emit('change', { checked: false, obj: item.data })
         })
       } else {
         // 全选
         selection.forEach(item => {
-          if (!this.items.includes(item.id)) {
-            this.$emit('change', { checked: true, obj: item })
+          if (!this.items.map(i => i.id).includes(item.data.id)) {
+            this.$emit('change', { checked: true, obj: item.data })
           }
         })
       }
@@ -405,7 +414,7 @@ export default {
           _.get(this, 'resources', []).forEach(row => {
             this.$refs[this.tableName].toggleRowSelection(
               row,
-              this.items.includes(_.get(row, 'data.id'))
+              this.items.map(item => item.id).includes(_.get(row, 'data.id'))
             )
           })
         } else {

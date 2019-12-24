@@ -1,5 +1,8 @@
+import Lenses from '@/mixins/Lenses'
+import Links from '@/mixins/Links'
 export default {
   name: 'resource-index-page',
+  mixins: [Lenses, Links],
   components: {
     'index-resource-table': () =>
       import('@/components/index/ResourceIndexTable'),

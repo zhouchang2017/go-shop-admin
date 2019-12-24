@@ -8,10 +8,7 @@
         @on-restore="onRestore"
         @on-force-delete="onForceDelete"
       />
-      <div
-        class="card mb-6"
-        v-loading="loading"
-      >
+      <div class="card mb-6" v-loading="loading">
         <div class="card-body">
           <div class="card-item">
             <div class="card-item__label">ID</div>
@@ -45,10 +42,7 @@
               {{ resource.updated_at | timeStr }}
             </div>
           </div>
-          <div
-            class="card-item"
-            v-if="resource.deleted_at"
-          >
+          <div class="card-item" v-if="resource.deleted_at">
             <div class="card-item__label">删除时间</div>
             <div class="card-item__content">
               {{ resource.deleted_at | timeStr }}
@@ -57,26 +51,14 @@
         </div>
       </div>
 
-      <div
-        id="图集"
-        class="font-bold text-2xl text-gray-700 uppercase mb-3"
-      >
+      <div id="图集" class="font-bold text-2xl text-gray-700 uppercase mb-3">
         图集
       </div>
-      <div
-        class="card mb-6"
-        v-loading="loading"
-      >
-        <div
-          class="card-body"
-          v-if="hasImages"
-        >
+      <div class="card mb-6" v-loading="loading">
+        <div class="card-body" v-if="hasImages">
           <ImageList :images="resource.images" />
         </div>
-        <div
-          class="card-body"
-          v-else
-        >
+        <div class="card-body" v-else>
           <div class="text-gray-500 inline-flex">
             <IIcon type="i-x-circle" />
             <div class="ml-3">woops! images is empty</div>
@@ -90,10 +72,7 @@
       >
         基本属性
       </div>
-      <div
-        class="card mb-6"
-        v-loading="loading"
-      >
+      <div class="card mb-6" v-loading="loading">
         <div
           class="card-body"
           v-if="getAttr(resource, 'attributes', []).length > 0"
@@ -107,10 +86,7 @@
             <div class="card-item__content">{{ attr.value }}</div>
           </div>
         </div>
-        <div
-          class="card-body"
-          v-else
-        >
+        <div class="card-body" v-else>
           <div class="text-gray-500 inline-flex">
             <IIcon type="i-x-circle" />
             <div class="ml-3">woops! attributes is empty</div>
@@ -124,10 +100,7 @@
       >
         销售属性
       </div>
-      <div
-        class="card mb-6"
-        v-loading="loading"
-      >
+      <div class="card mb-6" v-loading="loading">
         <div
           class="card-body"
           v-if="getAttr(resource, 'options', []).length > 0"
@@ -149,27 +122,24 @@
             </div>
             <div class="card-item__content">
               <div class="flex flex-row">
-                <div
-                  v-for="value in option.values"
-                  :key="value.id"
-                >
+                <div v-for="value in option.values" :key="value.id">
                   <el-tooltip
                     class="item"
                     effect="dark"
                     :content="value.code"
                     placement="top"
                   >
-                    <code class="markdown text-gray-700 p-1 hover:bg-gray-300  hover:font-bold hover:text-primary rounded mr-3 text-xs">{{ value.value }}</code>
+                    <code
+                      class="markdown text-gray-700 p-1 hover:bg-gray-300  hover:font-bold hover:text-primary rounded mr-3 text-xs"
+                      >{{ value.value }}</code
+                    >
                   </el-tooltip>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div
-          class="card-body"
-          v-else
-        >
+        <div class="card-body" v-else>
           <div class="text-gray-500 inline-flex">
             <IIcon type="i-x-circle" />
             <div class="ml-3">woops! option is empty</div>
@@ -192,39 +162,26 @@
           highlight-current-row
           style="width: 100%;"
         >
-          <el-table-column
-            label="商品编码"
-            prop="code"
-            align="left"
-          >
+          <el-table-column label="商品编码" prop="code" align="left">
           </el-table-column>
 
-          <el-table-column
-            label="价格"
-            prop="price"
-            sortable
-            align="left"
-          >
+          <el-table-column label="价格" prop="price" sortable align="left">
           </el-table-column>
 
-          <el-table-column
-            label="属性值"
-            prop="values"
-            align="left"
-          >
+          <el-table-column label="属性值" prop="values" align="left">
             <template slot-scope="{ row }">
               <div class="flex flex-row">
-                <div
-                  v-for="value in row.option_values"
-                  :key="value.id"
-                >
+                <div v-for="value in row.option_values" :key="value.id">
                   <el-tooltip
                     class="item"
                     effect="dark"
                     :content="value.code"
                     placement="top"
                   >
-                    <code class="markdown text-gray-700 p-1 bg-30 hover:bg-gray-300 hover:font-bold  rounded mr-3 text-xs">{{ value.value }}</code>
+                    <code
+                      class="markdown text-gray-700 p-1 bg-30 hover:bg-gray-300 hover:font-bold  rounded mr-3 text-xs"
+                      >{{ value.value }}</code
+                    >
                   </el-tooltip>
                 </div>
               </div>
@@ -266,9 +223,9 @@ export default {
     forceDeleteResource,
     restoreResource
   },
-  computed:{
-    hasImages(){
-      return _.get(this,'resource.images',[]).length > 0
+  computed: {
+    hasImages() {
+      return _.get(this, 'resource.images', []).length > 0
     }
   }
 }

@@ -1,5 +1,5 @@
 <template>
-  <Dropdown v-show="hasSlots" placement="r" class="w-full" :z-index="zIndex">
+  <Dropdown placement="r" class="w-full" :z-index="zIndex" v-show="hasItem">
     <div slot="trigger" class="hover:text-blue-500">
       <IIcon type="i-filter" />
     </div>
@@ -19,8 +19,8 @@ export default {
     Dropdown: () => import('@/components/Dropdown')
   },
   computed: {
-    hasSlots() {
-      return !_.isEmpty(this.$slots)
+    hasItem() {
+      return _.get(this, '$slots.default', []).length > 0
     }
   }
 }

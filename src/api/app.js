@@ -12,3 +12,19 @@ export function getQiniuToken() {
     method: 'get'
   })
 }
+
+// lenses
+export function getLenses(resourceUri) {
+  return axios({
+    url: `/lenses/${resourceUri}`,
+    method: 'get'
+  })
+}
+
+// links
+export function getLinks(resourceUri) {
+  return axios({
+    url: `/links/${resourceUri}`,
+    method: 'get'
+  })
+}
