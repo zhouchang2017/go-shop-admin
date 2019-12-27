@@ -54,7 +54,7 @@ export default {
   name: 'resource-index-page',
   components: {
     'index-resource-table': () =>
-      import('@/components/index/ResourceIndexTable'),
+      import('@/components/Index/ResourceIndexTable'),
     'filter-box-item': () => import('@/components/FilterBoxItem')
   },
   data() {

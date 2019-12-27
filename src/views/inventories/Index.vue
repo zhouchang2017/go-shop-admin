@@ -117,7 +117,7 @@ export default {
   mixins: [Inventory, Index],
   components: {
     'index-resource-table': () =>
-      import('@/components/index/ResourceIndexTable'),
+      import('@/components/Index/ResourceIndexTable'),
     FilterBoxItem: () => import('@/components/FilterBoxItem'),
     InventoryStatus: () => import('@/views/inventories/Status')
   },

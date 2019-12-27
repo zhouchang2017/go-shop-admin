@@ -1,7 +1,5 @@
 export default {
   data: () => ({
-    pageParameter: 'page',
-    perPageParameter: 'per_page',
     page: 1,
     perPage: 15,
     resourceTotal: 0
@@ -73,6 +71,22 @@ export default {
   },
 
   computed: {
+    resourceName() {
+      return _.get(this, '$route.meta.ResourceName')
+    },
+    /**
+     * Get the name of the per page query string variable.
+     */
+    perPageParameter() {
+      return this.resourceName + '_per_page'
+    },
+
+    /**
+     * Get the name of the page query string variable.
+     */
+    pageParameter() {
+      return this.resourceName + '_page'
+    },
     /**
      * Get the current page from the query string.
      */

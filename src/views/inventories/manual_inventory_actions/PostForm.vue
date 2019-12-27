@@ -27,17 +27,27 @@
             ></el-option>
           </el-select>
         </el-form-item>
+
         <el-form-item label="选择商品" prop="items">
-          <ItemSelectionTable :items="resource.items" @change="onChange" />
-          <div class="mt-3 w-full rounded-lg shadow-lg">
+          <component
+            :is="currentSelectionComponent"
+            :items="resource.items"
+            @change="onChange"
+            >{{ tips }}</component
+          >
+
+          <!-- <ItemSelectionTable :items="resource.items" @change="onChange" /> -->
+          <!-- <InventoryItemSelectionTable /> -->
+          <div
+            v-show="showResourceItems"
+            class="mt-3 w-full rounded-lg shadow-lg"
+          >
             <el-table :data="resource.items">
               <el-table-column type="index"> </el-table-column>
               <el-table-column prop="code" min-width="150" label="货号">
               </el-table-column>
               <el-table-column label="品牌" prop="product.brand.name" />
               <el-table-column label="类目" prop="product.category.name" />
-              <el-table-column label="价格" prop="price" sortable align="left">
-              </el-table-column>
               <el-table-column label="属性值" align="left">
                 <template slot-scope="{ row }">
                   <div class="flex flex-col items-center">
@@ -133,7 +143,10 @@ export default {
   name: 'post-form',
   mixins: [ResourceForm],
   components: {
-    ItemSelectionTable: () => import('@/components/ItemSelectionTable')
+    'item-selection-table': () => import('@/components/ItemSelectionTable'),
+    'inventory-item-selection-table': () =>
+      import('@/components/InventoryItemSelectionTable'),
+    'place-choose-type': () => import('./PlaceChooseType')
   },
   data() {
     let checkItems = (rule, value, callback) => {
@@ -147,8 +160,8 @@ export default {
     }
     return {
       resource: {
+        type: null,
         shop_id: '',
-        type: 0,
         items: []
       },
       items: {},
@@ -165,6 +178,12 @@ export default {
         ]
       }
     }
+  },
+  watch: {
+    'resource.shop_id': function(id) {
+      this.$store.commit('manualInventoryAction/SET_SHOP_ID', id)
+    },
+    'resource.type': function(type) {}
   },
   methods: {
     removeItem(obj) {
@@ -183,6 +202,7 @@ export default {
     },
     onChange({ checked, obj }) {
       if (checked) {
+        console.log(obj)
         this.resource.items.push({
           qty: 1,
           visible: false,
@@ -197,6 +217,24 @@ export default {
     }
   },
   computed: {
+    currentSelectionComponent() {
+      if (this.resource.type === 0) {
+        return 'item-selection-table'
+      }
+      if (this.resource.type === 1 && this.selectedShop) {
+        return 'inventory-item-selection-table'
+      }
+      return 'place-choose-type'
+    },
+    tips() {
+      if (!this.selectedType) {
+        return '请选择操作类型'
+      }
+      if (this.resource.type === 1 && !this.selectedShop) {
+        return '请选择出库门店'
+      }
+      return ''
+    },
     shops() {
       return _.get(this, '$user.shops', [])
     },
@@ -205,6 +243,21 @@ export default {
     },
     sumQty() {
       return _.sumBy(this.resource.items, 'qty')
+    },
+    selectedType() {
+      return !_.isNil(this.resource.type)
+    },
+    selectedShop() {
+      return this.resource.shop_id !== '' && !_.isNil(this.resource.shop_id)
+    },
+    showResourceItems() {
+      if (this.resource.type === 0) {
+        return true
+      }
+      if (this.resource.type === 1 && this.selectedShop) {
+        return true
+      }
+      return false
     }
   }
 }

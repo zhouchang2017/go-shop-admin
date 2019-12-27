@@ -5,7 +5,7 @@ export default {
   mixins: [Lenses, Links],
   components: {
     'index-resource-table': () =>
-      import('@/components/index/ResourceIndexTable'),
+      import('@/components/Index/ResourceIndexTable'),
     'filter-box-item': () => import('@/components/FilterBoxItem')
   },
   computed: {

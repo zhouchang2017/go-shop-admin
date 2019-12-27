@@ -213,7 +213,7 @@ import Detail from '@/mixins/Detail'
 export default {
   mixins: [Detail],
   components: {
-    ImageList: () => import('@/components/detail/ImageList'),
+    ImageList: () => import('@/components/Detail/ImageList'),
     HashNav: () => import('@/components/HashNav'),
     HashNavItem: () => import('@/components/HashNavItem')
   },

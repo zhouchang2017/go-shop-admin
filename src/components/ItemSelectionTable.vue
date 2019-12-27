@@ -1,5 +1,7 @@
 <template>
   <index-resource-table
+    v-loading="loading"
+    ref="IndexResourceTable"
     :filterWithTrashed="false"
     selection
     @change="payload => $emit('change', payload)"
@@ -51,9 +53,10 @@
 <script>
 import { getResources } from '@/api/item'
 export default {
+  name: 'ItenSelectionTable',
   components: {
     'index-resource-table': () =>
-      import('@/components/index/ResourceIndexTable'),
+      import('@/components/Index/ResourceIndexTable'),
     'filter-box-item': () => import('@/components/FilterBoxItem')
   },
   props: {
@@ -64,12 +67,28 @@ export default {
   },
   data() {
     return {
-      resources: {}
+      loading: false,
+      resources: {},
+      table: null
     }
   },
 
   methods: {
-    getResources
+    getResources,
+    removeFilter(key) {
+      this.table.removeFilter(key)
+    }
+  },
+  mounted() {
+    this.loading = true
+
+    setTimeout(() => {
+      this.$nextTick(() => {
+        this.table = this.$refs['IndexResourceTable']
+      })
+    }, 500)
+
+    this.loading = false
   }
 }
 </script>

@@ -14,6 +14,8 @@ Vue.config.productionTip = false
 
 const forms = require.context(`@/components/form`, true, /\.vue$/i)
 const icons = require.context(`@/components/icons`, true, /\.vue$/i)
+const IndexFields = require.context(`@/components/Index`, true, /\.vue$/i)
+const DetailFields = require.context(`@/components/Index`, true, /\.vue$/i)
 const automaticGlobalRegistration = (ctx, prefix = '') => {
   // 组件全局注册
   ctx.keys().forEach(key => {
@@ -36,6 +38,10 @@ const automaticGlobalRegistration = (ctx, prefix = '') => {
 
 automaticGlobalRegistration(forms, 'z')
 automaticGlobalRegistration(icons, 'i')
+automaticGlobalRegistration(IndexFields, 'index')
+automaticGlobalRegistration(DetailFields, 'detail')
+
+Vue.prototype.$Bus = new Vue()
 
 Vue.use(Element)
 Vue.mixin(Global)

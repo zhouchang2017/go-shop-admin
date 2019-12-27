@@ -2,7 +2,6 @@ import debounce from 'lodash/debounce'
 
 export default {
   data: () => ({
-    searchParameter: 'search',
     search: ''
   }),
 
@@ -41,6 +40,15 @@ export default {
   },
 
   computed: {
+    resourceName() {
+      return _.get(this, '$route.meta.ResourceName')
+    },
+    /**
+     * Get the name of the search query string variable.
+     */
+    searchParameter() {
+      return this.resourceName + '_search'
+    },
     /**
      * Get the current search value from the query string.
      */

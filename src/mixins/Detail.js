@@ -1,7 +1,7 @@
 export default {
   name: 'resource-deatil-page',
   components: {
-    DetailHead: () => import('@/components/detail/DetailHead')
+    DetailHead: () => import('@/components/Detail/DetailHead')
   },
   provide() {
     return {

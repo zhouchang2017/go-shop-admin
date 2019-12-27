@@ -1,9 +1,7 @@
 export default {
   data: () => ({
     orderBy: '',
-    orderByParameter: 'order_by',
-    orderByDirection: -1,
-    orderDirectionParameter: 'order_direction'
+    orderByDirection: -1
   }),
 
   methods: {
@@ -18,7 +16,7 @@ export default {
     sortChanged() {
       this.updateQueryString({
         [this.orderByParameter]: this.orderBy,
-        [this.orderDirectionParameter]: this.orderByDirection
+        [this.orderByDirectionParameter]: this.orderByDirection
       })
     },
 
@@ -46,6 +44,22 @@ export default {
   },
 
   computed: {
+    resourceName() {
+      return _.get(this, '$route.meta.ResourceName')
+    },
+    /**
+     * Get the name of the order by query string variable.
+     */
+    orderByParameter() {
+      return this.resourceName + '_order'
+    },
+
+    /**
+     * Get the name of the order by direction query string variable.
+     */
+    orderByDirectionParameter() {
+      return this.resourceName + '_direction'
+    },
     /**
      * Get the current order by from the query string.
      */
@@ -56,7 +70,7 @@ export default {
      * Get the current order direction value from the query string.
      */
     currentOrderByDirection() {
-      return parseInt(this.$route.query[this.orderDirectionParameter] || -1)
+      return parseInt(this.$route.query[this.orderByDirectionParameter] || -1)
     },
 
     tableSortParameter() {
