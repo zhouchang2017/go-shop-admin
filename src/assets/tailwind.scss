@@ -56,10 +56,10 @@ button:focus {
   @apply border-none;
 }
 .card-item__label {
-  @apply text-gray-600;
+  @apply text-gray-600 font-normal;
 }
 .card-item__content {
-  @apply text-gray-800;
+  @apply text-gray-800 break-words;
 }
 .card-foot {
   @apply bg-gray-100 flex p-3 rounded-b-lg;

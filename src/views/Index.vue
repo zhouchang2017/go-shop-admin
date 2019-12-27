@@ -89,49 +89,18 @@
           v-for="(field, index) in headings"
           :key="field.attribute"
           :label="field.name"
+          show-overflow-tooltip
         >
           <template slot-scope="{ row }">
             <component
-              :is="resolveFieldComponent(index, row.fields)"
+              :is="resolveComponentName(index, row.fields)"
               :field="row.fields[index]"
               :resourceName="resourceName"
             />
           </template>
         </el-table-column>
         <slot />
-        <!-- <el-table-column
-          v-if="showCreatedAt"
-          label="创建时间"
-          prop="data.created_at"
-          sortable="custom"
-          align="left"
-        >
-          <template slot-scope="scope">
-            <span>{{ scope.row.data.created_at | timeStr }}</span>
-          </template>
-        </el-table-column> -->
-        <!-- <el-table-column
-          v-if="showUpdatedAt"
-          label="更新时间"
-          prop="data.updated_at"
-          sortable="custom"
-          align="left"
-        >
-          <template slot-scope="scope">
-            <span>{{ scope.row.data.updated_at | timeStr }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column
-          v-if="currentTrashed"
-          label="删除时间"
-          prop="data.deleted_at"
-          sortable="custom"
-          align="left"
-        >
-          <template slot-scope="scope">
-            <span>{{ scope.row.data.deleted_at | timeStr }}</span>
-          </template>
-        </el-table-column> -->
+
         <!-- Resource Action -->
         <el-table-column
           v-if="shouldShowActions"
@@ -592,7 +561,7 @@ export default {
         .catch(() => {})
     },
 
-    resolveFieldComponent(index, fields) {
+    resolveComponentName(index, fields) {
       if (fields[index].prefix_component) {
         return `index-${fields[index].component}`
       }
