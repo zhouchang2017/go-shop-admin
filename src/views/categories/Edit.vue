@@ -27,7 +27,7 @@ import { getResource, updateResource } from '@/api/category'
 export default {
   name: 'resource-update-page',
   components: {
-    'post-form': () => import('@/views/brands/PostForm')
+    'post-form': () => import('./PostForm')
   },
   data() {
     return {

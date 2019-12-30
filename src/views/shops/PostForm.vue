@@ -1,9 +1,5 @@
 <template>
-  <el-form
-    :ref="formName"
-    :model="resource"
-    :rules="rules"
-  >
+  <el-form :ref="formName" :model="resource" :rules="rules">
     <div class="card overflow-hidden mb-6">
       <div class="card-head">
         <div class="card-head__title">
@@ -11,44 +7,22 @@
         </div>
       </div>
       <div class="w-full p-6">
-        <el-form-item
-          v-if="updating"
-          label="ID"
-          prop="id"
-        >
-          <el-input
-            v-model="resource.id"
-            disabled
-          ></el-input>
+        <el-form-item v-if="updating" label="ID" prop="id">
+          <el-input v-model="resource.id" disabled></el-input>
         </el-form-item>
-        <el-form-item
-          label="名称"
-          prop="name"
-        >
+        <el-form-item label="名称" prop="name">
           <el-input v-model="resource.name"></el-input>
         </el-form-item>
         <el-form-item label="省市区">
-          <area-cascader
-            filterable
-            v-model="resource.address"
-          > </area-cascader>
+          <area-cascader filterable v-model="resource.address"> </area-cascader>
         </el-form-item>
-        <el-form-item
-          label="详细地址"
-          prop="addr"
-        >
+        <el-form-item label="详细地址" prop="addr">
           <el-input v-model="resource.addr"></el-input>
         </el-form-item>
-        <el-form-item
-          label="联系人"
-          prop="addrName"
-        >
+        <el-form-item label="联系人" prop="addrName">
           <el-input v-model="resource.addrName"></el-input>
         </el-form-item>
-        <el-form-item
-          label="联系电话"
-          prop="addrPhone"
-        >
+        <el-form-item label="联系电话" prop="addrPhone">
           <el-input v-model="resource.addrPhone"></el-input>
         </el-form-item>
       </div>
@@ -60,10 +34,7 @@
         </div>
       </div>
       <div class="w-full p-6">
-        <el-form-item
-          label="门店位置"
-          class="el-form-item__full relative"
-        >
+        <el-form-item label="门店位置" class="el-form-item__full relative">
           <div class="flex flex-col sm:flex-row">
             <div class="flex sm:mr-3 mb-2">
               <el-input
@@ -103,10 +74,12 @@
               :key="admin.id"
               :label="admin.id"
             >
-              <div :class="{
+              <div
+                :class="{
                   'text-blue-500': admin.type === 'root',
                   'text-indigo-500': admin.type === 'manager'
-                }">
+                }"
+              >
                 {{ admin.nickname }}
               </div>
             </el-checkbox>
@@ -127,7 +100,7 @@ export default {
     BMap: () => import('@/components/baidu/BMap'),
     AreaCascader: () => import('@/components/AreaCascader')
   },
-  data () {
+  data() {
     return {
       resource: {
         name: '',
@@ -158,7 +131,7 @@ export default {
     }
   },
   methods: {
-    fetchAdmins () {
+    fetchAdmins() {
       getAdmins({ page: -1, only: 'id,nickname,type' }).then(data => {
         if (data.status === 200) {
           this.admins = _.get(data, 'data.data', []).map(item => {
@@ -172,7 +145,7 @@ export default {
       })
     },
     // resource transform
-    resourceTransform () {
+    resourceTransform() {
       const address = {
         ...this.resource.address,
         addr: this.resource.addr,
@@ -183,7 +156,7 @@ export default {
       return { name, address, location, members }
     },
     // 填充数据
-    fillResource () {
+    fillResource() {
       // 数据结构转换
 
       const { address, members, ...old } = this.value
@@ -198,11 +171,11 @@ export default {
         obj.addrPhone = phone
         obj.addr = addr
       }
-      
+
       this.$set(this, 'resource', Object.assign({}, this.resource, obj))
     }
   },
-  created () {
+  created() {
     this.fetchAdmins()
   }
 }

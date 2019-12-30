@@ -1,7 +1,7 @@
 <template>
-  <Dropdown placement="r" class="w-full" :z-index="zIndex" v-show="hasItem">
+  <dropdown placement="r" class="w-full" :z-index="zIndex" v-show="hasItem">
     <div slot="trigger" class="hover:text-blue-500">
-      <IIcon type="i-filter" />
+      <icons-icon type="icons-filter" />
     </div>
     <div
       style="width:380px"
@@ -9,7 +9,7 @@
     >
       <slot />
     </div>
-  </Dropdown>
+  </dropdown>
 </template>
 
 <script>

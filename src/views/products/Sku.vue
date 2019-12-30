@@ -25,7 +25,7 @@
             placement="top"
           >
             <span @click="autoGenSkusCode">
-              <IIcon
+              <icons-icon
                 type="i-duplicate"
                 title="自动填充商品编码"
                 class="inline-flex ml-3 appearance-none cursor-pointer text-gray-500 hover:text-gray-700"
@@ -66,7 +66,7 @@
               content="填充商品价格"
               placement="top"
             >
-              <IIcon
+              <icons-icon
                 type="i-edit"
                 class="inline-flex ml-3 appearance-none cursor-pointer text-gray-500 hover:text-gray-700"
               />

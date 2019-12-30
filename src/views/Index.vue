@@ -20,7 +20,7 @@
         class="flex rounded-t-lg bg-white items-center py-3 border-b border-gray-200"
       >
         <div class="flex items-center w-full md:w-3/5 pl-3 mr-10">
-          <z-search-input
+          <form-search-input
             :placeholder="searchInputPlaceholder"
             v-model.trim="search"
             @keydown.stop="performSearch"
@@ -30,7 +30,7 @@
         <div class="flex items-center ml-auto pr-3 text-gray-500">
           <!-- Lenses -->
           <div class="flex mr-3" v-show="shouldShowLenses">
-            <Dropdown placement="r" class="w-full">
+            <dropdown placement="r" class="w-full">
               <button
                 slot="trigger"
                 slot-scope="isOpen"
@@ -65,14 +65,14 @@
                   >{{ link.title }}</router-link
                 >
               </div>
-            </Dropdown>
+            </dropdown>
           </div>
-          <FilterBox zIndex="100">
+          <filter-box zIndex="100">
             <slot name="filters" v-bind:filters.sync="filters" />
-            <FilterBoxItem name="Trashed">
+            <filter-box-item name="Trashed">
               <el-checkbox v-model="trashed">显示软删除资源</el-checkbox>
-            </FilterBoxItem>
-          </FilterBox>
+            </filter-box-item>
+          </filter-box>
         </div>
       </div>
       <el-table
@@ -112,48 +112,48 @@
             <div class="flex justify-end items-center">
               <button
                 title="恢复"
-                v-if="row.meta.AuthorizedToRestore && row.meta.SoftDeleted"
+                v-if="row.AuthorizedToRestore && row.SoftDeleted"
                 @click="restoreResourceHandler(row.id)"
                 class="text-gray-500 hover:text-blue-500 mr-3"
               >
-                <IIcon viewBox="0 0 24 20" type="i-restore" />
+                <icons-icon viewBox="0 0 24 20" type="icons-restore" />
               </button>
               <router-link
-                v-if="row.meta.AuthorizedToView"
+                v-if="row.AuthorizedToView"
                 :to="{
-                  name: row.meta.DetailRouterName,
+                  name: row.DetailRouterName,
                   params: { id: row.id.value },
-                  query: withTrashedToQueryString(row.meta.SoftDeleted)
+                  query: withTrashedToQueryString(row.SoftDeleted)
                 }"
                 class="cursor-pointer inline-block text-gray-500 hover:text-blue-500 mr-3 focus:outline-none"
                 title="查看"
               >
-                <IIcon
+                <icons-icon
                   width="22"
                   height="18"
                   viewBox="0 0 22 16"
-                  type="i-view"
+                  type="icons-view"
                 />
               </router-link>
               <router-link
-                v-if="row.meta.AuthorizedToUpdate"
+                v-if="row.AuthorizedToUpdate"
                 :to="{
-                  name: row.meta.EditRouterName,
+                  name: row.EditRouterName,
                   params: { id: row.id.value },
-                  query: withTrashedToQueryString(row.meta.SoftDeleted)
+                  query: withTrashedToQueryString(row.SoftDeleted)
                 }"
                 class="cursor-pointer inline-block text-gray-500 hover:text-blue-500 mr-3 focus:outline-none"
                 title="编辑"
               >
-                <IIcon type="i-edit" />
+                <icons-icon type="icons-edit" />
               </router-link>
               <button
                 title="删除"
-                v-if="row.meta.AuthorizedToDelete"
-                @click="indexDeleteResourceHandler(row.id)"
+                v-if="row.AuthorizedToDelete"
+                @click="indexDeleteResourceHandler(row)"
                 class="text-gray-500 hover:text-blue-500"
               >
-                <IIcon viewBox="0 0 24 20" type="i-delete" />
+                <icons-icon viewBox="0 0 24 20" type="icons-delete" />
               </button>
             </div>
           </template>
@@ -183,11 +183,7 @@ import { now } from '@/utils/time'
 export default {
   name: 'Index',
   mixins: [Filterable, InteractsWithQueryString],
-  components: {
-    FilterBox: () => import('@/components/FilterBox'),
-    FilterBoxItem: () => import('@/components/FilterBoxItem'),
-    Dropdown: () => import('@/components/Dropdown')
-  },
+
   props: {
     // 表格行key
     rowKey: {
@@ -454,11 +450,11 @@ export default {
 
     async indexDeleteResourceHandler(resource) {
       try {
-        if (resource.deleted_at) {
+        if (resource.SoftDeleted) {
           // 硬删除
           await this.forceDeleteResourceHandler(resource)
           let index = this.resources.findIndex(
-            item => item.data[this.pk] == resource[this.pk]
+            item => item.id.value == resource.id.value
           )
           if (index > -1) {
             this.resources.splice(index, 1)
@@ -473,11 +469,17 @@ export default {
           // 软删除
           await this.deleteResourceHandler(resource)
           let index = this.resources.findIndex(
-            item => item.data[this.pk] == resource[this.pk]
+            item => item.id.value == resource.id.value
           )
           if (index > -1) {
-            if (this.withTrashed) {
-              resource.deleted_at = now()
+            if (this.trashed) {
+              let deletedAt = _.find(resource.fields, [
+                'attribute',
+                'deleted_at'
+              ])
+              if (deletedAt) {
+                deletedAt.value = now()
+              }
             } else {
               // 从数组移除
               this.resources.splice(index, 1)
@@ -498,14 +500,14 @@ export default {
     // 删除资源处理函数
     deleteResourceHandler(resource) {
       return new Promise((resolve, reject) => {
-        this.$confirm(`是否删除${_.get(resource, this.nameKey)}`, '提示', {
+        this.$confirm(`是否删除id[${_.get(resource, 'id.value')}]`, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         })
           .then(() => {
             axios
-              .delete(this.deleteResourceEndpoint(resource.id))
+              .delete(this.deleteResourceEndpoint(resource.id.value))
 
               .then(() => {
                 resolve()
@@ -522,14 +524,18 @@ export default {
     // 永久删除资源处理函数
     forceDeleteResourceHandler(resource) {
       return new Promise((resolve, reject) => {
-        this.$confirm(`是否永久删除${_.get(resource, this.nameKey)}`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        })
+        this.$confirm(
+          `是否永久删除id[${_.get(resource, 'id.value')}]`,
+          '提示',
+          {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }
+        )
           .then(() => {
             axios
-              .delete(this.forceDeleteResourceEndpoint(resource.id))
+              .delete(this.forceDeleteResourceEndpoint(resource.id.value))
               .then(() => {
                 resolve()
               })
@@ -543,16 +549,22 @@ export default {
     },
     // 恢复资源处理函数
     restoreResourceHandler(resource) {
-      this.$confirm(`是否恢复${_.get(resource, this.nameKey)}`, '提示', {
+      this.$confirm(`是否恢复id[${_.get(resource, 'id.value')}]`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'info'
       })
         .then(() => {
           axios
-            .put(this.restoreResourceEndpoint(resource.id))
+            .put(this.restoreResourceEndpoint(resource.id.value))
             .then(() => {
-              resource.deleted_at = null
+              let deletedAt = _.find(resource.fields, [
+                'attribute',
+                'deleted_at'
+              ])
+              if (deletedAt) {
+                deletedAt.value = null
+              }
             })
             .catch(({ response }) => {
               console.error(response)

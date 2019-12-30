@@ -1,5 +1,9 @@
 <template>
-  <div id="dropdown" class="relative inline-block" :style="{zIndex:zIndexValue}">
+  <div
+    id="dropdown"
+    class="relative inline-block"
+    :style="{ zIndex: zIndexValue }"
+  >
     <button
       @click="toggle"
       type="button"
@@ -38,7 +42,7 @@
 
 <script>
 export default {
-  props: ['placement','z-index'],
+  props: ['placement', 'z-index'],
   data() {
     return {
       buttonHasFocus: false,
@@ -74,7 +78,7 @@ export default {
           return 'left-0'
       }
     },
-    zIndexValue(){
+    zIndexValue() {
       return _.isNil(this.zIndex) ? '200' : this.zIndex
     }
   }

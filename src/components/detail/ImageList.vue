@@ -19,13 +19,13 @@
             @click="handlePictureCardPreview(image)"
             class="flex1 appearance-none cursor-pointer text-gray-500 hover:text-white"
           >
-            <IIcon class="h-6 w-6" type="i-zoom" />
+            <icons-icon class="h-6 w-6" type="i-zoom" />
           </div>
           <div
             @click="handleDownload(image)"
             class="flex1 ml-3 appearance-none cursor-pointer text-gray-500 hover:text-white"
           >
-            <IIcon class="h-6 w-6" type="i-download" />
+            <icons-icon class="h-6 w-6" type="i-download" />
           </div>
         </div>
       </div>

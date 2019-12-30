@@ -149,13 +149,13 @@
                 class="text-gray-500 hover:text-blue-500 mr-3"
                 title="编辑"
               >
-                <IIcon type="i-edit" />
+                <icons-icon type="i-edit" />
               </button>
               <button
                 @click="deleteOptionHandle(row)"
                 class="text-gray-500 hover:text-blue-500"
               >
-                <IIcon
+                <icons-icon
                   viewBox="0 0 24 20"
                   type="i-delete"
                 />

@@ -7,12 +7,21 @@
     style="width: 100%;"
   >
     <el-table-column
-      v-for="(prop, label) in headings"
-      :label="label"
-      :prop="prop"
+      v-for="(item, index) in headings"
+      :label="item.name"
+      :prop="item.attribute"
       align="left"
-      :key="prop"
+      :key="index"
     >
+      <template slot-scope="{ row }">
+        <component
+          :is="resolveComponentName(item)"
+          :resource-name="resourceName"
+          :resource-id="resourceId"
+          :resource="resource"
+          :field="row[index]"
+        />
+      </template>
     </el-table-column>
   </el-table>
 </template>
@@ -21,12 +30,23 @@
 export default {
   props: ['resource', 'resourceName', 'resourceId', 'field'],
 
+  methods: {
+    /**
+     * Resolve the component name.
+     */
+    resolveComponentName(field) {
+      return field.prefix_component
+        ? 'index-' + field.component
+        : field.component
+    }
+  },
+
   computed: {
     values() {
       return _.get(this, 'field.value', [])
     },
     headings() {
-      return _.get(this, 'field.meta.headings', {})
+      return _.get(this, 'field.headings', [])
     }
   }
 }

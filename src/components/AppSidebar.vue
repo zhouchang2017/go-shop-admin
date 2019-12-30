@@ -80,7 +80,7 @@
                 :to="{ name: item.name }"
                 class="mt-2 -mx-3 px-3 py-2 flex items-center justify-between text-sm font-medium  rounded-lg hover:bg-gray-200"
                 ><span class="inline-flex">
-                  <IIcon
+                  <icons-icon
                     v-if="item.meta.icon"
                     :type="item.meta.icon"
                     class="text-gray-500"
@@ -122,7 +122,7 @@
               href="#"
               class="mt-2 -mx-3 px-3 py-2 flex items-center justify-between text-sm font-medium hover:bg-gray-200 rounded-lg"
               ><span class="inline-flex">
-                <IIcon type="i-flag" class="text-gray-500" />
+                <icons-icon type="i-flag" class="text-gray-500" />
                 <span class="ml-2 text-gray-700">Flagged</span></span
               ></a
             >
@@ -130,7 +130,7 @@
               href="#"
               class="mt-2 -mx-3 px-3 py-2 flex items-center justify-between text-sm font-medium hover:bg-gray-200 rounded-lg"
               ><span class="inline-flex">
-                <IIcon type="i-edit" class="text-gray-500 w-6 h-6" />
+                <icons-icon type="i-edit" class="text-gray-500 w-6 h-6" />
                 <span class="ml-2 text-gray-700">Drafts</span></span
               >
               <span

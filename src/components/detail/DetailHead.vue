@@ -20,7 +20,7 @@
         class="hover:bg-gray-100 hover:text-gray-500 rounded-lg"
         style="border-style:none;"
       >
-        <IIcon viewBox="0 0 20 20" class="h-6 w-6" type="i-restore" />
+        <icons-icon viewBox="0 0 20 20" class="h-6 w-6" type="i-restore" />
       </el-button>
       <el-button
         title="删除"
@@ -30,7 +30,7 @@
         class="hover:bg-gray-100 hover:text-gray-500 mr-2 rounded-lg"
         style="border-style:none;"
       >
-        <IIcon viewBox="0 0 20 20" class="h-6 w-6" type="i-delete" />
+        <icons-icon viewBox="0 0 20 20" class="h-6 w-6" type="i-delete" />
       </el-button>
       <router-link
         title="编辑"
@@ -38,7 +38,7 @@
         :to="{ name: meta.EditRouterName }"
         class="el-button--small rounded-lg hover:opacity-75 inline-block bg-blue-500 text-white"
       >
-        <IIcon type="i-edit" class="h-6 w-6" />
+        <icons-icon type="i-edit" class="h-6 w-6" />
       </router-link>
     </div>
   </div>

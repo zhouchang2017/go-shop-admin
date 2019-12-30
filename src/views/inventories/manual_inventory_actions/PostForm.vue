@@ -116,7 +116,7 @@
                           type="button"
                           class="text-gray-500 hover:text-blue-500"
                         >
-                          <IIcon viewBox="0 0 24 20" type="i-delete" />
+                          <icons-icon viewBox="0 0 24 20" type="i-delete" />
                         </button>
                       </div>
                     </el-popover>

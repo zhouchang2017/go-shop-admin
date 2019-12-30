@@ -6,7 +6,7 @@
     clearable
   >
     <div slot="prefix">
-      <IIcon type="i-search" />
+      <icons-icon type="icons-search" />
     </div>
   </el-input>
 </template>

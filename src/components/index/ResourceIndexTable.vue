@@ -109,7 +109,7 @@
               @click="restoreResourceHandler(row.data)"
               class="text-gray-500 hover:text-blue-500 mr-3"
             >
-              <IIcon viewBox="0 0 24 20" type="i-restore" />
+              <icons-icon viewBox="0 0 24 20" type="i-restore" />
             </button>
             <router-link
               v-if="row.meta.AuthorizedToView"
@@ -121,7 +121,7 @@
               class="cursor-pointer inline-block text-gray-500 hover:text-blue-500 mr-3 focus:outline-none"
               title="查看"
             >
-              <IIcon width="22" height="18" viewBox="0 0 22 16" type="i-view" />
+              <icons-icon width="22" height="18" viewBox="0 0 22 16" type="i-view" />
             </router-link>
             <router-link
               v-if="row.meta.AuthorizedToUpdate"
@@ -133,7 +133,7 @@
               class="cursor-pointer inline-block text-gray-500 hover:text-blue-500 mr-3 focus:outline-none"
               title="编辑"
             >
-              <IIcon type="i-edit" />
+              <icons-icon type="i-edit" />
             </router-link>
             <button
               title="删除"
@@ -141,7 +141,7 @@
               @click="indexDeleteResourceHandler(row.data)"
               class="text-gray-500 hover:text-blue-500"
             >
-              <IIcon viewBox="0 0 24 20" type="i-delete" />
+              <icons-icon viewBox="0 0 24 20" type="i-delete" />
             </button>
           </div>
         </template>

@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import CardSizes from '@/utils/cardSize'
+import CardSizes from '@/utils/cardSizes'
 
 export default {
   props: {

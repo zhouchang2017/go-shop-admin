@@ -195,7 +195,7 @@ export default {
     ProductAttributes: () => import('./ProductAttributes'),
     CustomOptionValueForm: () => import('./CustomOptionValueForm'),
     Sku: () => import('./Sku'),
-    ImageUpload: () => import('@/components/form/ImageUpload')
+    ImageUpload: () => import('@/components/Form/ImageUpload')
   },
   data() {
     return {

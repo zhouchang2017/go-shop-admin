@@ -18,7 +18,7 @@ export const constantRoutes = [
         path: 'dashboard',
         component: () => import(/* webpackChunkName: "home" */ '@/views/Home'),
         name: 'dashboard',
-        meta: { title: 'Dashboard', icon: 'i-home', Group: 'App' },
+        meta: { title: 'Dashboard', icon: 'icons-home', Group: 'App' },
         hidden: false
       }
     ]
@@ -34,7 +34,17 @@ export const constantRoutes = [
     path: '/auth/auth-redirect',
     component: () => import('@/views/auth/AuthRedirect'),
     hidden: true
+  },
+  {
+    name: '404',
+    path: '/404',
+    component: () => import('@/views/404')
   }
+  // {
+  //   name: 'catch-all',
+  //   path: '*',
+  //   component: () => import('@/views/404')
+  // }
 ]
 
 const createRouter = () =>

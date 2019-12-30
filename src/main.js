@@ -12,36 +12,37 @@ import './filters'
 import Global from './mixins/Global'
 Vue.config.productionTip = false
 
-const forms = require.context(`@/components/form`, true, /\.vue$/i)
-const icons = require.context(`@/components/icons`, true, /\.vue$/i)
-const IndexFields = require.context(`@/components/Index`, true, /\.vue$/i)
-const DetailFields = require.context(`@/components/Detail`, true, /\.vue$/i)
-const automaticGlobalRegistration = (ctx, prefix = '') => {
-  // 组件全局注册
-  ctx.keys().forEach(key => {
-    // Get component config
-    const componentConfig = ctx(key)
+// 全局自动懒加载组件注册
+// 组件名称规则 dirname-component
+// 例如 components/form/SearchInput.vue => form-search-input
+//     components/Card.vue => card
+//     components/icons/editor/Bold.vue => icons-editor-bold
+require
+  .context(`@/components`, true, /\.vue$/i)
+  .keys()
+  .forEach(key => {
+    let path = key.replace('./', '')
+    let prefix = key
+      .split('/')
+      .filter(item => !item.includes('.'))
+      .join('-')
+      .toLowerCase()
 
-    const name = _.upperFirst(
-      _.camelCase(
-        prefix +
-          '' +
-          key
-            .split('/')
-            .pop()
-            .replace(/\.\w+$/, '')
+    const name = [
+      prefix,
+      _.kebabCase(
+        key
+          .split('/')
+          .pop()
+          .replace(/\.\w+$/, '')
       )
-    )
-    Vue.component(name, componentConfig.default || componentConfig)
+    ]
+      .filter(item => item)
+      .join('-')
+
+    Vue.component(name, () => import(`@/components/${path}`))
   })
-}
 
-automaticGlobalRegistration(forms, 'z')
-automaticGlobalRegistration(icons, 'i')
-automaticGlobalRegistration(IndexFields, 'index')
-automaticGlobalRegistration(DetailFields, 'detail')
-
-Vue.component('heading', () => import('@/components/Heading'))
 Vue.prototype.$Bus = new Vue()
 
 Vue.use(Element)

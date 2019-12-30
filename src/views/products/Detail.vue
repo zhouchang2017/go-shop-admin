@@ -60,7 +60,7 @@
         </div>
         <div class="card-body" v-else>
           <div class="text-gray-500 inline-flex">
-            <IIcon type="i-x-circle" />
+            <icons-icon type="i-x-circle" />
             <div class="ml-3">woops! images is empty</div>
           </div>
         </div>
@@ -88,7 +88,7 @@
         </div>
         <div class="card-body" v-else>
           <div class="text-gray-500 inline-flex">
-            <IIcon type="i-x-circle" />
+            <icons-icon type="i-x-circle" />
             <div class="ml-3">woops! attributes is empty</div>
           </div>
         </div>
@@ -141,7 +141,7 @@
         </div>
         <div class="card-body" v-else>
           <div class="text-gray-500 inline-flex">
-            <IIcon type="i-x-circle" />
+            <icons-icon type="i-x-circle" />
             <div class="ml-3">woops! option is empty</div>
           </div>
         </div>

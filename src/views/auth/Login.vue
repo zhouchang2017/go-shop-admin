@@ -17,7 +17,7 @@
             <h3 class="pt-4 text-2xl text-center text-gray-800">
               Welcome Back!
             </h3>
-            <z-form-warp
+            <form-form-warp
               :ref="formName"
               :value="form"
               :rules="rules"
@@ -32,7 +32,7 @@
               <el-button type="primary" class="w-full block mt-2" @click="login"
                 >Sign In</el-button
               >
-            </z-form-warp>
+            </form-form-warp>
 
             <hr class="mb-6 border-t" />
             <div class="text-center">

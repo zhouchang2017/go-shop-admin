@@ -74,7 +74,11 @@
                 class="hover:bg-gray-100 hover:text-gray-500 rounded-lg"
                 style="border-style:none;"
               >
-                <IIcon viewBox="0 0 20 20" class="h-6 w-6" type="i-restore" />
+                <icons-icon
+                  viewBox="0 0 20 20"
+                  class="h-6 w-6"
+                  type="icons-restore"
+                />
               </el-button>
               <el-button
                 title="删除"
@@ -84,7 +88,11 @@
                 class="hover:bg-gray-100 hover:text-gray-500 mr-2 rounded-lg"
                 style="border-style:none;"
               >
-                <IIcon viewBox="0 0 20 20" class="h-6 w-6" type="i-delete" />
+                <icons-icon
+                  viewBox="0 0 20 20"
+                  class="h-6 w-6"
+                  type="icons-delete"
+                />
               </el-button>
               <router-link
                 title="编辑"
@@ -95,7 +103,7 @@
                 }"
                 class="el-button--small rounded-lg hover:opacity-75 inline-block bg-blue-500 text-white"
               >
-                <IIcon type="i-edit" class="h-6 w-6" />
+                <icons-icon type="icons-edit" class="h-6 w-6" />
               </router-link>
             </div>
           </div>
@@ -103,13 +111,13 @@
       </div>
     </div>
     <div class="hidden xl:text-sm xl:block xl:w-1/4 xl:px-6">
-      <HashNav>
-        <HashNavItem
+      <hash-nav>
+        <hash-nav-item
           v-for="(panel, index) in availablePanels"
           :name="panel.name"
           :key="index"
         />
-      </HashNav>
+      </hash-nav>
     </div>
   </div>
 </template>
@@ -119,11 +127,6 @@ import Minimum from '@/utils/minimum'
 import Deletable from '@/mixins/Deletable'
 export default {
   mixins: [Deletable],
-  components: {
-    HashNav: () => import('@/components/HashNav'),
-    HashNavItem: () => import('@/components/HashNavItem'),
-    panel: () => import('@/components/Panel')
-  },
   data: () => ({
     initialLoading: true,
     loading: true,
@@ -203,9 +206,9 @@ export default {
       this.resource = null
 
       return Minimum(axios.get('/' + this.resourceName + '/' + this.resourceId))
-        .then(({ data: { panels, resource, meta } }) => {
+        .then(({ data: { panels, resource } }) => {
           this.panels = panels
-          this.resource = { ...resource, ...meta }
+          this.resource = resource
           this.loading = false
         })
         .catch(error => {
