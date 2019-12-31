@@ -36,8 +36,7 @@ export default {
     fields: [],
     panels: [],
     validationErrors: new Errors(),
-    isWorking: false,
-    model: {}
+    isWorking: false
   }),
 
   async created() {
@@ -149,24 +148,6 @@ export default {
       })
     },
 
-    async submit() {
-      const data = await this.$refs[this.formRef].submit()
-      try {
-        let res = await createResource(data)
-        if (res.status === 201) {
-          this.$router.push({
-            name: this.$route.meta.DetailRouterName,
-            params: { id: res.data.id }
-          })
-          this.$message({
-            message: '创建成功',
-            type: 'success'
-          })
-        }
-      } catch ({ response }) {
-        console.error(response)
-      }
-    },
     reset() {
       this.$refs[this.formRef].reset()
     }

@@ -13,7 +13,12 @@
       <div class="flex w-full bg-white p-3">
         <div class="ml-auto"></div>
         <el-button @click="reset">Reset</el-button>
-        <el-button @click="submit" type="primary">Create</el-button>
+        <el-button
+          @click="submitViaCreateResource"
+          :loading="isWorking"
+          type="primary"
+          >Create</el-button
+        >
       </div>
     </div>
   </div>
@@ -31,30 +36,57 @@ export default {
       formRef: 'post-form',
       resource: {
         name: ''
-      }
+      },
+      isWorking: false
     }
   },
   methods: {
-    async submit() {
-      const data = await this.$refs[this.formRef].submit()
+    async submitViaCreateResource(e) {
+      await this.createResource()
+    },
+    /**
+     * Send a create request for this resource
+     */
+    createRequest(data) {
+      return axios.post(`/${this.resourceName}`, data)
+    },
+
+    async createResource() {
+      this.isWorking = true
+      const formData = await this.$refs[this.formRef].submit()
       try {
-        let res = await createResource(data)
-        if (res.status === 201) {
-          this.$router.push({
-            name: this.$route.meta.DetailRouterName,
-            params: { id: res.data.id }
-          })
+        const {
+          data: { redirect }
+        } = await this.createRequest(formData)
+
+        this.$message({
+          message: '创建成功',
+          type: 'success'
+        })
+
+        this.$router.push({ path: redirect })
+      } catch (error) {
+        this.isWorking = false
+
+        if (error.response.status == 422) {
+          console.log(error.response)
+          // this.validationErrors = new Errors(error.response.data.errors)
           this.$message({
-            message: '创建成功',
-            type: 'success'
+            message: 'There was a problem submitting the form.',
+            type: 'error'
           })
         }
-      } catch ({ response }) {
-        console.error(response)
       }
+
+      this.isWorking = false
     },
     reset() {
       this.$refs[this.formRef].reset()
+    }
+  },
+  computed: {
+    resourceName() {
+      return _.get(this, '$route.meta.ResourceName')
     }
   }
 }

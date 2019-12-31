@@ -119,7 +119,7 @@
                 <icons-icon viewBox="0 0 24 20" type="icons-restore" />
               </button>
               <router-link
-                v-if="row.AuthorizedToView"
+                v-if="row.AuthorizedToView && row.id"
                 :to="{
                   name: row.DetailRouterName,
                   params: { id: row.id.value },
@@ -136,7 +136,7 @@
                 />
               </router-link>
               <router-link
-                v-if="row.AuthorizedToUpdate"
+                v-if="row.AuthorizedToUpdate && row.id"
                 :to="{
                   name: row.EditRouterName,
                   params: { id: row.id.value },
@@ -241,7 +241,7 @@ export default {
 
     this.initialLoading = false
 
-    await this.getLenses()
+    // await this.getLenses()
 
     this.$watch(
       () => {

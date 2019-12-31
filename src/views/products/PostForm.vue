@@ -186,8 +186,7 @@
 
 <script>
 import ResourceForm from '@/mixins/ResourceForm'
-import { getResources as getBrands } from '@/api/brand'
-import { getResources as getCategories } from '@/api/category'
+
 export default {
   name: 'post-form',
   mixins: [ResourceForm],
@@ -322,32 +321,14 @@ export default {
         )
       })
     },
-    // 获取品牌列表
-    fetchBrands() {
-      getBrands({ page: -1 })
-        .then(({ data }) => {
-          this.$set(
-            this,
-            'brands',
-            data.data.map(item => item.data)
-          )
-          // this.brands = data.data.map(item => item.data)
-        })
-        .catch(err => {
-          console.error(err.response)
-        })
+    async getCreationInfo() {
+      let {
+        data: { brands, categories }
+      } = await axios.get('/creation-info/products')
+      this.brands = brands
+      this.categories = categories
     },
 
-    // 获取类目列表
-    fetchCategories() {
-      getCategories({ page: -1 })
-        .then(({ data }) => {
-          this.categories = data.data.map(item => item.data)
-        })
-        .catch(err => {
-          console.error(err.response)
-        })
-    },
     // 重置表单
     reset() {
       this.$refs[this.formName].resetFields()
@@ -389,7 +370,7 @@ export default {
     }
   },
   async created() {
-    await Promise.all([this.fetchBrands(), this.fetchCategories()])
+    this.getCreationInfo()
   }
 }
 </script>
