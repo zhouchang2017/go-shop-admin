@@ -102,13 +102,23 @@ router.beforeEach(async (to, from, next) => {
           await store.dispatch('auth/getInfo')
           // 获取用户路由表
           const accessRouters = await store.dispatch('loadRouters')
+
+          // // 路由表排序
+          let groupRouters = _.groupBy(accessRouters, item => {
+            return item.path.split('/')[0]
+          })
+          let routers = _.flatten(
+            _.map(groupRouters, items => {
+              return _.sortBy(items, item => /\:/.test(item.path))
+            })
+          )
           // 动态追加路由
           router.addRoutes([
             {
               path: '/',
               component: () => import('@/layout/Default'),
               meta: { title: 'Layout' },
-              children: accessRouters
+              children: routers
             }
           ])
 

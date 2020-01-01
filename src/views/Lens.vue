@@ -58,7 +58,7 @@
                   >{{ lense.title }}</router-link
                 >
                 <router-link
-                  v-for="link in pages"
+                  v-for="link in links"
                   :key="link.title"
                   :to="{ name: link.router_name }"
                   class="block px-6 py-3 leading-tight hover:bg-gray-200"
@@ -100,64 +100,6 @@
           </template>
         </el-table-column>
         <slot />
-
-        <!-- Resource Action -->
-        <el-table-column
-          v-if="shouldShowActions"
-          label="Actions"
-          align="right"
-          class-name="small-padding fixed-width"
-        >
-          <template slot-scope="{ row }">
-            <div class="flex justify-end items-center">
-              <button
-                title="恢复"
-                v-if="row.AuthorizedToRestore && row.SoftDeleted"
-                @click="restoreResourceHandler(row.id)"
-                class="text-gray-500 hover:text-blue-500 mr-3"
-              >
-                <icons-icon viewBox="0 0 24 20" type="icons-restore" />
-              </button>
-              <router-link
-                v-if="row.AuthorizedToView && row.id"
-                :to="{
-                  name: row.DetailRouterName,
-                  params: { id: row.id.value },
-                  query: withTrashedToQueryString(row.SoftDeleted)
-                }"
-                class="cursor-pointer inline-block text-gray-500 hover:text-blue-500 mr-3 focus:outline-none"
-                title="查看"
-              >
-                <icons-icon
-                  width="22"
-                  height="18"
-                  viewBox="0 0 22 16"
-                  type="icons-view"
-                />
-              </router-link>
-              <router-link
-                v-if="row.AuthorizedToUpdate && row.id"
-                :to="{
-                  name: row.EditRouterName,
-                  params: { id: row.id.value },
-                  query: withTrashedToQueryString(row.SoftDeleted)
-                }"
-                class="cursor-pointer inline-block text-gray-500 hover:text-blue-500 mr-3 focus:outline-none"
-                title="编辑"
-              >
-                <icons-icon type="icons-edit" />
-              </router-link>
-              <button
-                title="删除"
-                v-if="row.AuthorizedToDelete"
-                @click="indexDeleteResourceHandler(row)"
-                class="text-gray-500 hover:text-blue-500"
-              >
-                <icons-icon viewBox="0 0 24 20" type="icons-delete" />
-              </button>
-            </div>
-          </template>
-        </el-table-column>
       </el-table>
       <div class="flex justify-center rounded-b-lg bg-gray-100 py-3 px-2">
         <el-pagination
@@ -215,7 +157,7 @@ export default {
     resources: [],
     actions: [],
     lenses: [],
-    pages: [],
+    links: [],
     cards: [],
     search: '',
     filters: {},
@@ -240,10 +182,6 @@ export default {
     await this.getResources()
 
     this.initialLoading = false
-
-    await this.getLenses()
-
-    await this.getPages()
 
     this.$watch(
       () => {
@@ -270,7 +208,7 @@ export default {
     getResources() {
       this.$nextTick(() => {
         return Minimum(
-          axios.get('/' + this.resourceName, {
+          axios.get(this.lensEndpoint, {
             params: this.resourceRequestQueryString
           }),
           300
@@ -323,24 +261,6 @@ export default {
 
     debouncer: _.debounce(callback => callback(), 500),
 
-    /**
-     * Get the lenses available for the current resource.
-     */
-    getLenses() {
-      this.lenses = []
-      return axios.get(this.lensesEndpoint).then(response => {
-        this.lenses = response.data
-      })
-    },
-    /**
-     * Get the lenses available for the current resource.
-     */
-    getPages() {
-      this.pages = []
-      return axios.get(this.pagesEndpoint).then(response => {
-        this.pages = response.data
-      })
-    },
     /**
      * Sync the current search value from the query string.
      */
@@ -596,6 +516,9 @@ export default {
     }
   },
   computed: {
+    lensEndpoint() {
+      return _.get(this, '$route.meta.EndPoints')
+    },
     resourceName() {
       return _.get(this, '$route.meta.ResourceName')
     },
@@ -631,7 +554,7 @@ export default {
     },
     // 是否显示Lenses
     shouldShowLenses() {
-      return this.lenses.length > 0 || this.pages.length > 0
+      return this.lenses.length > 0 || this.links.length > 0
     },
     shouldShowActions() {
       return !!!this.hiddenAction
@@ -647,9 +570,6 @@ export default {
      */
     lensesEndpoint() {
       return `/lenses/${this.resourceName}`
-    },
-    pagesEndpoint() {
-      return `/pages/${this.resourceName}`
     },
     // 删除资源api
     deleteResourceEndpoint() {

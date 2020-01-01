@@ -22,16 +22,16 @@
         class="flex rounded-t-lg bg-white items-center py-3 border-b border-gray-200"
       >
         <div class="flex items-center w-full md:w-3/5 pl-3 mr-10">
-          <z-search-input
+          <form-search-input
             placeholder="请输入货号进行搜索"
             v-model.trim="search"
           />
         </div>
         <div class="flex items-center ml-auto pr-3 text-gray-500">
-          <FilterBox zIndex="100">
-            <FilterBoxItem name="状态">
+          <filter-box zIndex="100">
+            <filter-box-item name="状态">
               <el-select
-                v-model="filters.options.status"
+                v-model="filters.status"
                 multiple
                 class="w-full"
                 placeholder="请选择状态"
@@ -45,10 +45,10 @@
                   <InventoryStatus :value="item.value" />
                 </el-option>
               </el-select>
-            </FilterBoxItem>
-            <FilterBoxItem name="门店">
+            </filter-box-item>
+            <filter-box-item name="门店">
               <el-select
-                v-model="filters.options.shops"
+                v-model="filters.shops"
                 multiple
                 class="w-full"
                 placeholder="请选择门店"
@@ -62,8 +62,8 @@
                 >
                 </el-option>
               </el-select>
-            </FilterBoxItem>
-          </FilterBox>
+            </filter-box-item>
+          </filter-box>
         </div>
       </div>
       <el-table
@@ -74,7 +74,6 @@
         tooltip-effect="dark"
         :span-method="objectSpanMethod"
         class="border-none"
-        v-on:sort-change="sortChange"
       >
         <el-table-column min-width="80" fixed label="货号" prop="code" />
         <el-table-column
@@ -95,7 +94,6 @@
           align="center"
           sortable="custom"
           prop="total"
-          :formatter="() => 'qty'"
         >
           <template slot-scope="{ row }">
             <div class="font-bold">
@@ -138,8 +136,8 @@
       </el-table>
       <div class="flex justify-center rounded-b-lg bg-gray-100 py-3 px-2">
         <el-pagination
-          @size-change="setPerPage"
-          @current-change="setPage"
+          @size-change="updatePerPageChanged"
+          @current-change="selectPage"
           :current-page="page"
           :page-sizes="[5, 10, 15, 100]"
           :page-size="perPage"
@@ -152,117 +150,77 @@
 </template>
 
 <script>
-import { getResources as getShops } from '@/api/shop'
-import InteractsWithQueryString from '@/mixins/InteractsWithQueryString'
-import Paginatable from '@/mixins/Paginatable'
-import PerformsSearches from '@/mixins/PerformsSearches'
-import Sortable from '@/mixins/Sortable'
-import Filterable from '@/mixins/Filterable'
 import Inventory from './inventory'
-import Lens from '@/mixins/Lens'
+import Index from '@/mixins/Index'
+
 export default {
   name: 'resource-aggregate-page',
-  mixins: [
-    InteractsWithQueryString,
-    Paginatable,
-    PerformsSearches,
-    Sortable,
-    Filterable,
-    Inventory,
-    Lens
-  ],
+  mixins: [Inventory, Index],
   components: {
-    FilterBox: () => import('@/components/FilterBox'),
-    FilterBoxItem: () => import('@/components/FilterBoxItem'),
-    // Dropdown: () => import('@/components/Dropdown')
-    // 'filter-box-item': () => import('@/components/FilterBoxItem'),
     InventoryStatus: () => import('@/views/inventories/Status')
   },
-  data() {
-    return {
-      tableName: 'aggregate-table',
-      loading: false,
-      // 资源列表
-      resources: [],
-      isOpen: false,
+  data: () => ({
+    filters: {
       shops: [],
-      shopMap: {},
-      filters: {
-        options: {
-          shops: [],
-          status: []
-        }
-      },
-      spanArr: [],
-      pos: 0,
-      mergeCols: [
-        'code',
-        'total',
-        'product.brand.name',
-        'product.category.name'
-      ]
-    }
-  },
-  watch: {
-    $route: function(v) {
-      this.fetchResources(v.query)
+      status: []
     },
+    spanArr: [],
+    pos: 0,
+    mergeCols: ['code', 'total', 'product.brand.name', 'product.category.name']
+  }),
+  watch: {
     resources: function(v) {
       this.getSpanArr(v)
     }
   },
+  async created() {
+    this.initializeSearchFromQueryString()
+    this.initializePerPageFromQueryString()
+    this.initializeTrashedFromQueryString()
+    this.initializeOrderingFromQueryString()
+    this.initializeFiltersFromQueryString()
+
+    await this.getResources()
+
+    this.initialLoading = false
+
+    this.$watch(
+      () => {
+        return (
+          this.resourceName +
+          this.encodedFilters +
+          this.currentSearch +
+          this.currentPage +
+          this.perPage +
+          this.currentOrderBy +
+          this.currentOrderByDirection +
+          this.currentTrashed
+        )
+      },
+      () => {
+        this.getResources()
+      }
+    )
+  },
   methods: {
-    // 获取列表方法
-    fetchResources(query = {}) {
-      this.loading = true
-      this.fetch(this.mergeQueryString(query))
-        .then(res => {
-          if (res.status === 200) {
-            if (_.isNil(res.data.data)) {
-              this.resources = []
-              this.resourceTotal = 0
-              this.loading = false
-            } else {
-              this.$set(
-                this,
-                'resources',
-                res.data.data.reduce((t, item) => {
-                  const { inventories, qty, ...root } = item
-                  let items = _.get(item, 'inventories', []).map(inventory => {
-                    return Object.assign({}, root, inventory, { total: qty })
-                  })
-                  t.push(...items)
-                  return t
-                }, [])
-              )
-              this.resourceTotal = res.data.pagination.total
-              this.loading = false
-            }
-          }
-        })
-        .catch(({ response }) => {
-          // this.$message.error(JSON.stringify(response.data))
-          this.loading = false
-        })
-    },
-    // 获取门店列表
-    fetchShops() {
-      getShops({ page: -1, only: '_id,name' }).then(data => {
-        if (data.status === 200) {
-          this.shops = _.get(data, 'data.data', []).map(item => {
-            return _.tap(
-              {
-                id: _.get(item, 'data.id'),
-                name: _.get(item, 'data.name')
-              },
-              shop => {
-                this.$set(this.shopMap, shop.id, shop)
-              }
-            )
+    /**
+     * 设置Resource
+     */
+    setResources(data) {
+      this.$set(
+        this,
+        'resources',
+        data.reduce((t, item) => {
+          const { inventories, ...root } = item
+          let items = _.get(item, 'inventories', []).map(inventory => {
+            return Object.assign({}, root, inventory)
           })
-        }
-      })
+          t.push(...items)
+          return t
+        }, [])
+      )
     },
+
     // 获取库存数量
     getStock(id, shops) {
       return _.get(
@@ -270,10 +228,6 @@ export default {
         'qty',
         0
       )
-    },
-    sortChange({ column, prop, order }) {
-      let field = !_.isNil(column.formatter) ? column.formatter() : prop
-      this.setSort({ prop: field, order })
     },
     getSpanArr(data, key = 'id') {
       this.pos = 0
@@ -307,8 +261,8 @@ export default {
     }
   },
   computed: {
-    title() {
-      return _.get(this.$route, 'meta.Title', this.$route.name)
+    resourcesEndpoint() {
+      return `/aggregate/${this.resourceName}`
     },
     indexTitle() {
       return _.get(this.$route, 'meta.IndexTitle', false)
@@ -317,22 +271,21 @@ export default {
       return this.shops.length
     },
     availableShops() {
-      let filterStores = _.get(this.filters, 'options.shops', [])
+      let filterStores = _.get(this.filters, 'shops', [])
       if (filterStores.length === 0) {
         return this.shops
       }
       return filterStores.map(id => this.shopMap[id])
+    },
+    shops() {
+      return _.get(this, '$route.meta.shops', [])
+    },
+    shopMap() {
+      return this.shops.reduce((res, shop) => {
+        res[shop.id] = shop
+        return res
+      }, {})
     }
-  },
-  created() {
-    this.fetchShops()
-  },
-  mounted() {
-    this.$nextTick(() => {
-      //   this.$refs[this.tableName].sort(this.tableSortParameter)
-      // this.filters = _.defaults(this.filterStruct, this.filters)
-      this.fetchResources()
-    })
   }
 }
 </script>
