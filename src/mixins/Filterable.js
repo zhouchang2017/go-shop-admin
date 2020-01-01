@@ -1,40 +1,106 @@
 export default {
-  data: () => ({
-    filters: {}
-  }),
-
   methods: {
-    filtersChanged() {
-      this.updateQueryString({ filters: this.encodedFilters })
-    },
-
-    toBase64() {
-      return btoa(encodeURIComponent(JSON.stringify(this.filters)))
-    },
-    b64Decode(str) {
-      return JSON.parse(decodeURIComponent(atob(str)))
-    },
-
-    setFilter(key, value) {
-      this.$set(this.filters, key, value)
-    },
-
-    removeFilter(key) {
-      let obj = {}
-      _.each(this.filters, (v, k) => {
-        if (k !== key) {
-          obj[k] = v
-        }
-      })
-      this.$set(this, 'filters', obj)
+    // filter组件名称
+    resolveFilterComponentName(filter) {
+      if (filter.prefix_component) {
+        return `filters-${filter.component}`
+      }
+      return filter.component
     },
 
     /**
-     * Sync the filters values from the query string.
+     * Clear filters and reset the resource table
      */
-    initializeFiltersFromQueryString() {
-      this.filters = this.currentFilters
+    async clearSelectedFilters(lens) {
+      if (lens) {
+        await this.$store.dispatch(`${this.resourceName}/resetFilterState`, {
+          resourceName: this.resourceName,
+          lens
+        })
+      } else {
+        await this.$store.dispatch(`${this.resourceName}/resetFilterState`, {
+          resourceName: this.resourceName
+        })
+      }
+
+      this.updateQueryString({
+        [this.pageParameter]: 1,
+        [this.filterParameter]: ''
+      })
+    },
+
+    /**
+     * Handle a filter state change.
+     */
+    filterChanged() {
+      this.updateQueryString({
+        [this.pageParameter]: 1,
+        [this.filterParameter]: this.$store.getters[
+          `${this.resourceName}/currentEncodedFilters`
+        ]
+      })
+    },
+
+    /**
+     * Set up filters for the current view
+     */
+    async initializeFilters(lens) {
+      // Clear out the filters from the store first
+      this.$store.commit(`${this.resourceName}/clearFilters`)
+
+      await this.$store.dispatch(`${this.resourceName}/fetchFilters`, {
+        resourceName: this.resourceName,
+        lens
+      })
+      await this.initializeState(lens)
+    },
+
+    /**
+     * Initialize the filter state
+     */
+    async initializeState(lens) {
+      this.initialEncodedFilters
+        ? await this.$store.dispatch(
+            `${this.resourceName}/initializeCurrentFilterValuesFromQueryString`,
+            this.initialEncodedFilters
+          )
+        : await this.$store.dispatch(`${this.resourceName}/resetFilterState`, {
+            resourceName: this.resourceName,
+            lens
+          })
+    },
+
+    filtersChanged() {
+      this.updateQueryString({ filters: this.encodedFilters })
     }
+
+    // toBase64() {
+    //   return btoa(encodeURIComponent(JSON.stringify(this.filters)))
+    // },
+    // b64Decode(str) {
+    //   return JSON.parse(decodeURIComponent(atob(str)))
+    // },
+
+    // setFilter(key, value) {
+    //   this.$set(this.filters, key, value)
+    // },
+
+    // removeFilter(key) {
+    //   let obj = {}
+    //   _.each(this.filters, (v, k) => {
+    //     if (k !== key) {
+    //       obj[k] = v
+    //     }
+    //   })
+    //   this.$set(this, 'filters', obj)
+    // },
+
+    // /**
+    //  * Sync the filters values from the query string.
+    //  */
+    // initializeFiltersFromQueryString() {
+    //   this.filters = this.currentFilters
+    // }
   },
 
   computed: {
@@ -47,24 +113,47 @@ export default {
     filterParameter() {
       return this.resourceName + '_filter'
     },
-    currentFilters() {
-      let filters = _.get(this, `$route.query.${this.filterParameter}`)
-      if (_.isNil(filters)) {
-        return this.filters
-      }
-      return this.b64Decode(filters)
-    },
+
     /**
-     * Return the currently encoded filter string
+     * Return the currently encoded filter string from the store
      */
     encodedFilters() {
-      return btoa(encodeURIComponent(JSON.stringify(this.filters)))
+      return this.$store.getters[`${this.resourceName}/currentEncodedFilters`]
     },
+
     /**
      * Return the initial encoded filters from the query string
      */
     initialEncodedFilters() {
       return this.$route.query[this.filterParameter] || ''
+    },
+
+    /**
+     * Determine if the resource has any filters
+     */
+    hasFilters() {
+      return this.$store.getters[`${this.resourceName}/hasFilters`]
+    },
+
+    /**
+     * Return the filters from state
+     */
+    filters() {
+      return this.$store.getters[`${this.resourceName}/filters`]
+    },
+
+    /**
+     * Determine via state whether filters are applied
+     */
+    filtersAreApplied() {
+      return this.$store.getters[`${this.resourceName}/filtersAreApplied`]
+    },
+
+    /**
+     * Return the number of active filters
+     */
+    activeFilterCount() {
+      return this.$store.getters[`${this.resourceName}/activeFilterCount`]
     }
   }
 

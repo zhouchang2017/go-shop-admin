@@ -5,7 +5,7 @@
     >
       {{ name }}
     </div>
-    <div class="px-3 py-1"><slot /></div>
+    <div class="px-3 py-3"><slot /></div>
   </div>
 </template>
 

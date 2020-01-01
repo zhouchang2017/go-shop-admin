@@ -15,7 +15,7 @@
     </button>
 
     <div
-      v-if="isOpen"
+      v-show="isOpen"
       @click="isOpen = false"
       class="fixed inset-0 opacity-25 bg-black"
       tabindex="-1"
@@ -30,7 +30,7 @@
       leave-to-class="opacity-0 scale-90"
     >
       <div
-        v-if="isOpen"
+        v-show="isOpen"
         :class="position"
         class="mt-2 absolute origin-top-right text-left z-200"
       >

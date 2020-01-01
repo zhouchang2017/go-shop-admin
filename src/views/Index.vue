@@ -67,8 +67,15 @@
               </div>
             </dropdown>
           </div>
-          <filter-box zIndex="100">
-            <slot name="filters" v-bind:filters.sync="filters" />
+          <filter-box zIndex="100" v-if="hasFilters">
+            <component
+              v-for="filter in filters"
+              :key="filter.key"
+              :is="resolveFilterComponentName(filter)"
+              :resource-name="resourceName"
+              :filter-key="filter.key"
+              @change="filterChanged"
+            />
             <filter-box-item name="Trashed">
               <el-checkbox v-model="trashed">显示软删除资源</el-checkbox>
             </filter-box-item>
@@ -218,7 +225,7 @@ export default {
     pages: [],
     cards: [],
     search: '',
-    filters: {},
+    filterComponents: [],
     orderBy: '',
     orderByDirection: '',
     trashed: false,
@@ -235,8 +242,8 @@ export default {
     this.initializePerPageFromQueryString()
     this.initializeTrashedFromQueryString()
     this.initializeOrderingFromQueryString()
-    this.initializeFiltersFromQueryString()
 
+    await this.initializeFilters()
     await this.getResources()
 
     this.initialLoading = false
@@ -333,7 +340,7 @@ export default {
       })
     },
     /**
-     * Get the lenses available for the current resource.
+     * Get the Pages available for the current resource.
      */
     getPages() {
       this.pages = []
@@ -341,6 +348,7 @@ export default {
         this.pages = response.data
       })
     },
+
     /**
      * Sync the current search value from the query string.
      */
@@ -451,12 +459,6 @@ export default {
      */
     initializePerPageFromQueryString() {
       this.perPage = this.$route.query[this.perPageParameter] || 15
-    },
-    /**
-     * Sync the filters values from the query string.
-     */
-    initializeFiltersFromQueryString() {
-      this.filters = this.currentFilters
     },
 
     async indexDeleteResourceHandler(resource) {
@@ -650,6 +652,9 @@ export default {
     },
     pagesEndpoint() {
       return `/pages/${this.resourceName}`
+    },
+    filtersEndpoint() {
+      return `/filters/${this.resourceName}`
     },
     // 删除资源api
     deleteResourceEndpoint() {

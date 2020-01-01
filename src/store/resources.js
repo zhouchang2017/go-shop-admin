@@ -1,12 +1,10 @@
-import _ from 'lodash'
-
 export default {
   namespaced: true,
 
-  state: () => ({
+  state: {
     filters: [],
     originalFilters: []
-  }),
+  },
 
   getters: {
     /**
@@ -28,19 +26,21 @@ export default {
      * The current unencoded filter value payload
      */
     currentFilters: (state, getters) => {
-      return _.map(state.filters, f => {
-        return {
-          class: f.class,
-          value: f.currentValue
-        }
-      })
+      return _.reduce(
+        state.filters,
+        (res, f) => {
+          res[f.key] = f.value
+          return res
+        },
+        {}
+      )
     },
 
     /**
      * Return the current filters encoded to a string.
      */
     currentEncodedFilters: (state, getters) =>
-      btoa(JSON.stringify(getters.currentFilters)),
+      btoa(encodeURIComponent(JSON.stringify(getters.currentFilters))),
 
     /**
      * Determine whether any filters are applied
@@ -54,11 +54,9 @@ export default {
       return _.reduce(
         state.filters,
         (result, f) => {
-          const originalFilter = getters.getOriginalFilter(f.class)
-          const originalFilterCloneValue = JSON.stringify(
-            originalFilter.currentValue
-          )
-          const currentFilterCloneValue = JSON.stringify(f.currentValue)
+          const originalFilter = getters.getOriginalFilter(f.key)
+          const originalFilterCloneValue = JSON.stringify(originalFilter.value)
+          const currentFilterCloneValue = JSON.stringify(f.value)
           return currentFilterCloneValue == originalFilterCloneValue
             ? result
             : result + 1
@@ -72,13 +70,13 @@ export default {
      */
     getFilter: state => filterKey => {
       return _.find(state.filters, filter => {
-        return filter.class == filterKey
+        return filter.key == filterKey
       })
     },
 
     getOriginalFilter: state => filterKey => {
       return _.find(state.originalFilters, filter => {
-        return filter.class == filterKey
+        return filter.key == filterKey
       })
     },
 
@@ -96,9 +94,10 @@ export default {
     filterOptionValue: (state, getters) => (filterKey, optionKey) => {
       const filter = getters.getFilter(filterKey)
 
-      return _.find(filter.currentValue, (value, key) => key == optionKey)
+      return _.find(filter.value, (value, key) => key == optionKey)
     }
   },
+
   actions: {
     /**
      * Fetch the current filters for the given resource name.
@@ -107,10 +106,8 @@ export default {
       let { resourceName, lens = false } = options
 
       const { data } = lens
-        ? await Nova.request().get(
-            '/nova-api/' + resourceName + '/lens/' + lens + '/filters'
-          )
-        : await Nova.request().get('/nova-api/' + resourceName + '/filters')
+        ? await axios.get('/filters/' + resourceName + '/lens/' + lens)
+        : await axios.get('/filters/' + resourceName)
 
       commit('storeFilters', data)
     },
@@ -121,8 +118,8 @@ export default {
     async resetFilterState({ commit, getters }) {
       _.each(getters.originalFilters, filter => {
         commit('updateFilterState', {
-          filterClass: filter.class,
-          value: filter.currentValue
+          key: filter.key,
+          value: filter.value
         })
       })
     },
@@ -135,19 +132,24 @@ export default {
       encodedFilters
     ) {
       if (encodedFilters) {
-        const initialFilters = JSON.parse(atob(encodedFilters))
-        _.each(initialFilters, f => {
-          commit('updateFilterState', { filterClass: f.class, value: f.value })
+        const initialFilters = JSON.parse(
+          decodeURIComponent(atob(encodedFilters))
+        )
+        _.each(initialFilters, (value, key) => {
+          commit('updateFilterState', {
+            key,
+            value
+          })
         })
       }
     }
   },
 
   mutations: {
-    updateFilterState(state, { filterClass, value }) {
-      const filter = _(state.filters).find(f => f.class == filterClass)
+    updateFilterState(state, { key, value }) {
+      const filter = _(state.filters).find(f => f.key == key)
 
-      filter.currentValue = value
+      filter.value = value
     },
 
     /**

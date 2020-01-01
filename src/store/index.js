@@ -23,9 +23,11 @@ export default new Vuex.Store({
     sidebarOpen: false,
     routers: [],
     addRouters: [],
-    routerLoaded: false
+    routerLoaded: false,
+    resources: []
   },
   getters: {
+    resources: state => state.resources,
     sidebarOpen: state => state.sidebarOpen,
     routerLoaded: state => state.routerLoaded,
     routers: state => state.routers,
@@ -37,6 +39,9 @@ export default new Vuex.Store({
       state.addRouters = routers
       state.routers = constantRoutes.concat(routers)
       state.routerLoaded = true
+    },
+    SET_RESOURCES: (state, resources) => {
+      state.resources = resources
     }
   },
   actions: {
@@ -54,6 +59,12 @@ export default new Vuex.Store({
             reject(err)
           })
       })
+    },
+
+    async loadConfig({ commit }) {
+      let { data } = await axios.get('/config')
+      commit('SET_RESOURCES', data)
+      return data
     }
   }
 })

@@ -11,13 +11,8 @@
             v-for="item in group"
             :key="item.value"
             :value="item.value"
-            :label="item.name"
+            :label="item.label"
           >
-            <component
-              :is="resolveComponentName(item)"
-              :resource-name="resourceName"
-              :field="item"
-            />
           </el-option>
         </el-option-group>
       </template>
@@ -26,12 +21,8 @@
           v-for="option in options"
           :key="option.value"
           :value="option.value"
+          :label="option.label"
         >
-          <component
-            :is="resolveComponentName(option)"
-            :resource-name="resourceName"
-            :field="option"
-          />
         </el-option>
       </template>
     </el-select>

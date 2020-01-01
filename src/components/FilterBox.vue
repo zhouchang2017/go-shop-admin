@@ -15,9 +15,7 @@
 <script>
 export default {
   props: ['z-index'],
-  components: {
-    Dropdown: () => import('@/components/Dropdown')
-  },
+
   computed: {
     hasItem() {
       return _.get(this, '$slots.default', []).length > 0

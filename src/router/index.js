@@ -5,6 +5,7 @@ import 'nprogress/nprogress.css' // progress bar style
 import { getToken } from '@/utils/auth' // get token from cookie
 import getPageTitle from '@/utils/getPageTitle'
 import store from '@/store'
+import resources from '@/store/resources'
 
 Vue.use(VueRouter)
 
@@ -100,10 +101,17 @@ router.beforeEach(async (to, from, next) => {
         try {
           // 获取用户信息
           await store.dispatch('auth/getInfo')
+          // 获取系统配置
+          let modules = await store.dispatch('loadConfig')
+          // 动态注册vuex模块
+          modules.forEach(resource => {
+            store.registerModule(resource.resourceName, _.cloneDeep(resources))
+          })
+
           // 获取用户路由表
           const accessRouters = await store.dispatch('loadRouters')
 
-          // // 路由表排序
+          // 路由表排序
           let groupRouters = _.groupBy(accessRouters, item => {
             return item.path.split('/')[0]
           })
