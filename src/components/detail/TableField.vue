@@ -7,6 +7,7 @@
     style="width: 100%;"
   >
     <el-table-column
+      show-overflow-tooltip
       v-for="(item, index) in headings"
       :label="item.name"
       :prop="item.attribute"

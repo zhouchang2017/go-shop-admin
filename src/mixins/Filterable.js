@@ -68,39 +68,7 @@ export default {
             resourceName: this.resourceName,
             lens
           })
-    },
-
-    filtersChanged() {
-      this.updateQueryString({ filters: this.encodedFilters })
     }
-
-    // toBase64() {
-    //   return btoa(encodeURIComponent(JSON.stringify(this.filters)))
-    // },
-    // b64Decode(str) {
-    //   return JSON.parse(decodeURIComponent(atob(str)))
-    // },
-
-    // setFilter(key, value) {
-    //   this.$set(this.filters, key, value)
-    // },
-
-    // removeFilter(key) {
-    //   let obj = {}
-    //   _.each(this.filters, (v, k) => {
-    //     if (k !== key) {
-    //       obj[k] = v
-    //     }
-    //   })
-    //   this.$set(this, 'filters', obj)
-    // },
-
-    // /**
-    //  * Sync the filters values from the query string.
-    //  */
-    // initializeFiltersFromQueryString() {
-    //   this.filters = this.currentFilters
-    // }
   },
 
   computed: {
@@ -156,16 +124,4 @@ export default {
       return this.$store.getters[`${this.resourceName}/activeFilterCount`]
     }
   }
-
-  // created() {
-  //   this.initializeFiltersFromQueryString()
-
-  //   this.$watch(
-  //     () => this.filters,
-  //     () => {
-  //       this.filtersChanged()
-  //     },
-  //     { deep: true }
-  //   )
-  // }
 }

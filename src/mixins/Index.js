@@ -1,8 +1,12 @@
 import InteractsWithQueryString from '@/mixins/InteractsWithQueryString'
-import Filterable from '@/mixins/Filterable'
 import Minimum from '@/utils/minimum'
 export default {
-  mixins: [Filterable, InteractsWithQueryString],
+  mixins: [InteractsWithQueryString],
+  props: {
+    ResourceName: {
+      type: String
+    }
+  },
   data: () => ({
     initialLoading: true,
     loading: true,
@@ -13,7 +17,6 @@ export default {
     pages: [],
     cards: [],
     search: '',
-    filters: {},
     orderBy: '',
     orderByDirection: '',
     trashed: false,
@@ -22,9 +25,7 @@ export default {
     resourceTotal: 0
   }),
   methods: {
-    /**
-     * Get the resources based on the current page, search, filters, etc.
-     */
+    // 获取资源.
     getResources() {
       this.$nextTick(() => {
         return Minimum(
@@ -61,15 +62,11 @@ export default {
           })
       })
     },
-    /**
-     * 设置Resource
-     */
+    // 设置Resource
     setResources(data) {
       this.resources = data
     },
-    /**
-     * Execute a search against the resource.
-     */
+    // 搜索
     performSearch(event) {
       this.debouncer(() => {
         console.log(event)
@@ -83,11 +80,18 @@ export default {
       })
     },
 
+    // 防抖
     debouncer: _.debounce(callback => callback(), 500),
 
-    /**
-     * Get the lenses available for the current resource.
-     */
+    // 获取当前资源可用的聚合页
+    getLenses() {
+      this.lenses = []
+      return axios.get(this.lensesEndpoint).then(response => {
+        this.lenses = response.data
+      })
+    },
+
+    // 获取当前资源可用的自定义页面
     getPages() {
       this.pages = []
       return axios.get(this.pagesEndpoint).then(response => {
@@ -95,60 +99,40 @@ export default {
       })
     },
 
-    /**
-     * Sync the current search value from the query string.
-     */
+    // 初始化搜索值，从url中
     initializeSearchFromQueryString() {
       this.search = this.currentSearch
     },
 
-    /**
-     * Sync the current order by values from the query string.
-     */
+    // 初始化排序，从url中
     initializeOrderingFromQueryString() {
       this.orderBy = this.currentOrderBy
       this.orderByDirection = this.currentOrderByDirection
     },
 
-    /**
-     * Sync the trashed state values from the query string.
-     */
+    // 初始化trashed，从url中
     initializeTrashedFromQueryString() {
       this.trashed = this.currentTrashed
     },
 
-    /**
-     * Sync the per page values from the query string.
-     */
+    // 初始化分页步长，从url中
     initializePerPageFromQueryString() {
-      this.perPage = this.$route.query[this.perPageParameter] || 15
-    },
-    /**
-     * Sync the filters values from the query string.
-     */
-    initializeFiltersFromQueryString() {
-      this.filters = this.currentFilters
+      this.perPage = this.$route.query[this.perPageParameter] || this.perPage
     },
 
-    /**
-     * Update the trashed constraint for the resource listing.
-     */
+    // 更新trashed参数
     trashedChanged(trashedStatus) {
       this.trashed = trashedStatus
       this.updateQueryString({ [this.trashedParameter]: this.trashed })
     },
 
-    /**
-     * Update the per page parameter in the query string
-     */
+    // 更新分页步长参数
     updatePerPageChanged(perPage) {
-      this.perPage = perPage
+      this.perPage = parseInt(perPage)
       this.perPageChanged()
     },
 
-    /**
-     * Update the desired amount of resources per page.
-     */
+    // 分页步长变化处理
     perPageChanged() {
       this.updateQueryString({ [this.perPageParameter]: this.perPage })
     },
@@ -158,12 +142,10 @@ export default {
       return withTrashed ? { [this.trashedParameter]: this.trashed } : {}
     },
 
-    /**
-     * Select the next page.
-     */
+    // 改变当前页码
     selectPage(page) {
-      this.page = page
-      this.updateQueryString({ [this.pageParameter]: page })
+      this.page = parseInt(page)
+      this.updateQueryString({ [this.pageParameter]: parseInt(page) })
     },
 
     // 排序方法
@@ -180,28 +162,29 @@ export default {
     }
   },
   computed: {
+    // 资源名称
     resourceName() {
-      return _.get(this, '$route.meta.ResourceName')
+      return _.isNil(this.ResourceName)
+        ? _.get(this, '$route.meta.ResourceName')
+        : this.ResourceName
     },
-
+    // 资源api
     resourcesEndpoint() {
       return `/${this.resourceName}`
     },
-
+    // 当前页标题
     title() {
       return _.get(this, '$route.meta.Title', this.resourceName)
     },
-
+    // Table ref name
     tableName() {
       return this.resourceName + '_table'
     },
-    /**
-     * Build the resource request query string.
-     */
+    // 请求参数
     resourceRequestQueryString() {
       return {
         search: this.currentSearch,
-        filters: this.encodedFilters,
+        filters: _.get(this, 'encodedFilters', ''),
         order_by: this.currentOrderBy,
         order_direction: this.currentOrderByDirection,
         per_page: this.currentPerPage,
@@ -209,9 +192,7 @@ export default {
         page: this.currentPage
       }
     },
-    /**
-     * Determine if the resource should show any cards
-     */
+    // 是否显示cards
     shouldShowCards() {
       // Don't show cards if this resource is beings shown via a relations
       return this.cards.length > 0
@@ -220,21 +201,19 @@ export default {
     shouldShowLenses() {
       return this.lenses.length > 0 || this.pages.length > 0
     },
+    // 是否显示actions
     shouldShowActions() {
       return !!!this.hiddenAction
     },
-    /**
-     * Get the endpoint for this resource's metrics.
-     */
+    // card api
     cardsEndpoint() {
       return `/cards/${this.resourceName}`
     },
-    /**
-     * Get the endpoint for this resource's lenses.
-     */
+    // 自定义聚合api
     lensesEndpoint() {
       return `/lenses/${this.resourceName}`
     },
+    // 自定义页面api
     pagesEndpoint() {
       return `/pages/${this.resourceName}`
     },
@@ -250,97 +229,73 @@ export default {
     restoreResourceEndpoint() {
       return id => `/${this.resourceName}/${id}/restore`
     },
-    /**
-     * Get the current search value from the query string.
-     */
+    // 当前搜索参数
     currentSearch() {
       return this.$route.query[this.searchParameter] || ''
     },
 
-    /**
-     * Get the current order by value from the query string.
-     */
+    // 当前排序字段
     currentOrderBy() {
       return this.$route.query[this.orderByParameter] || ''
     },
 
-    /**
-     * Get the current order by direction from the query string.
-     */
+    // 当前排序方向
     currentOrderByDirection() {
       return this.$route.query[this.orderByDirectionParameter] || -1
     },
 
-    /**
-     * Get the current trashed constraint value from the query string.
-     */
+    // 当前trashed值
     currentTrashed() {
       return this.$route.query[this.trashedParameter] || false
     },
 
-    /**
-     * Get the current per page value from the query string.
-     */
+    // 当前分页步长
     currentPerPage() {
       return parseInt(this.$route.query[this.perPageParameter] || this.perPage)
     },
 
-    /**
-     * Get the current page from the query string.
-     */
+    // 当前页
     currentPage() {
       return parseInt(this.$route.query[this.pageParameter] || 1)
     },
 
-    /**
-     * Get the name of the search query string variable.
-     */
+    // 搜索参数名称
     searchParameter() {
       return this.resourceName + '_search'
     },
 
-    /**
-     * Get the name of the order by query string variable.
-     */
+    // 排序字段参数名称
     orderByParameter() {
       return this.resourceName + '_order'
     },
 
-    /**
-     * Get the name of the order by direction query string variable.
-     */
+    // 排序方向参数名称
     orderByDirectionParameter() {
       return this.resourceName + '_direction'
     },
 
-    /**
-     * Get the name of the trashed constraint query string variable.
-     */
+    // trashed 参数名称
     trashedParameter() {
       return this.resourceName + '_trashed'
     },
 
-    /**
-     * Get the name of the per page query string variable.
-     */
+    // 分页步长参数名称
     perPageParameter() {
       return this.resourceName + '_per_page'
     },
 
-    /**
-     * Get the name of the page query string variable.
-     */
+    // 页面参数名称
     pageParameter() {
       return this.resourceName + '_page'
     },
     // 搜索框提示
-    // searchInputPlaceholder() {
-    //   return this.searchPlaceholder
-    //     ? this.searchPlaceholder
-    //     : this.title
-    //     ? `请输入${this.title}名称`
-    //     : '请输入关键词'
-    // },
+    searchInputPlaceholder() {
+      return this.searchPlaceholder
+        ? this.searchPlaceholder
+        : this.title
+        ? `请输入${this.title}名称`
+        : '请输入关键词'
+    },
     // 表头
     headings() {
       return _.get(this, '$route.meta.Headings', [])

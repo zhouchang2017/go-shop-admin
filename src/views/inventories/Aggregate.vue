@@ -28,7 +28,7 @@
           />
         </div>
         <div class="flex items-center ml-auto pr-3 text-gray-500">
-          <filter-box zIndex="100">
+          <filter-box zIndex="100" :count="activeFilterCount">
             <filter-box-item name="状态">
               <el-select
                 v-model="filters.status"
@@ -152,10 +152,10 @@
 <script>
 import Inventory from './inventory'
 import Index from '@/mixins/Index'
-
+import StandardFilterable from '@/mixins/StandardFilterable'
 export default {
   name: 'resource-aggregate-page',
-  mixins: [Inventory, Index],
+  mixins: [Inventory, Index, StandardFilterable],
   components: {
     InventoryStatus: () => import('@/views/inventories/Status')
   },
@@ -169,6 +169,12 @@ export default {
     mergeCols: ['code', 'total', 'product.brand.name', 'product.category.name']
   }),
   watch: {
+    filters: {
+      handler: function(v) {
+        this.filterChanged()
+      },
+      deep: true
+    },
     resources: function(v) {
       this.getSpanArr(v)
     }

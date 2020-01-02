@@ -6,57 +6,40 @@
       </div>
     </div>
 
-    <post-form :ref="formRef" :value="resource" />
-    <div class="mb-6"></div>
-
-    <div class="fixed bottom-0 left-0 w-full sm:pl-64">
-      <div class="flex w-full bg-white p-3">
-        <div class="ml-auto"></div>
-        <el-button @click="reset">Reset</el-button>
-        <el-button @click="submit" type="primary">Create</el-button>
+    <card class="p-6 flex">
+      <div class="flex items-center justify-center w-full">
+        <el-tabs v-model="type" class="w-full">
+          <el-tab-pane label="入库" name="1">
+            <div v-if="type == 1">
+              <put-form />
+            </div>
+          </el-tab-pane>
+          <el-tab-pane label="出库" name="2">
+            <div v-if="type == 2">
+              <take-form />
+            </div>
+          </el-tab-pane>
+        </el-tabs>
       </div>
-    </div>
+    </card>
   </div>
 </template>
 
 <script>
-import { createResource } from '@/api/inventory'
 export default {
-  name: 'resource-create-page',
+  name: 'inventoryActionNew',
+
   components: {
-    'post-form': () => import('./PostForm')
+    'put-form': () => import('./Put'),
+    'take-form': () => import('./Take')
   },
+
   data() {
     return {
-      formRef: 'post-form',
-      resource: {
-        name: ''
-      }
+      type: '1'
     }
   },
-  methods: {
-    async submit() {
-      const data = await this.$refs[this.formRef].submit()
-      try {
-        let res = await createResource(data)
-        if (res.status === 201) {
-          this.$router.push({
-            name: this.$route.meta.DetailRouterName,
-            params: { id: res.data.id }
-          })
-          this.$message({
-            message: '创建成功',
-            type: 'success'
-          })
-        }
-      } catch ({ response }) {
-        console.error(response)
-      }
-    },
-    reset() {
-      this.$refs[this.formRef].reset()
-    }
-  }
+  methods: {}
 }
 </script>
 
