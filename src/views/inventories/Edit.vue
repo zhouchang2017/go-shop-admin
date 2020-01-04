@@ -2,87 +2,117 @@
   <div class="flex flex-col">
     <div class="w-full">
       <div class="font-bold text-2xl text-gray-700 mb-3 uppercase">
-        {{ $route.meta.Title }}
+        {{ title }}
       </div>
     </div>
 
-    <template v-if="loaded" v-loading="loading">
-      <post-form :ref="formRef" :value="resource" />
-      <div class="mb-6"></div>
-
-      <div class="fixed bottom-0 left-0 w-full sm:pl-64">
-        <div class="flex w-full bg-white p-3">
-          <div class="ml-auto"></div>
-          <el-button @click="reset">Reset</el-button>
-          <el-button @click="submit" type="primary">Submit</el-button>
-        </div>
-      </div>
-    </template>
+    <div class="flex min-h-500" v-loading="loading">
+      <component
+        :updating="true"
+        :originalResource="resource"
+        v-if="!initialLoading"
+        :is="resolveComponentName()"
+      />
+    </div>
   </div>
 </template>
 
 <script>
-import { getResource, updateResource } from '@/api/brand'
+import Minimum from '@/utils/minimum'
 
 export default {
   name: 'resource-update-page',
+  data: () => ({
+    loading: true,
+    initialLoading: true,
+    submittedViaUpdateResource: false,
+    isWorking: false,
+    resource: null
+  }),
+
   components: {
-    'post-form': () => import('@/views/brands/PostForm')
+    'put-form': () => import('./Put'),
+    'take-form': () => import('./Take')
   },
-  data() {
-    return {
-      loaded: false,
-      formRef: 'post-form',
-      resource: {
-        name: ''
-      },
-      meta: {},
-      loading: false
-    }
+
+  /**
+   * Mount the component.
+   */
+  mounted() {
+    this.initializeComponent()
   },
+
   methods: {
-    async fetchResource() {
-      try {
-        const { data } = await getResource(
-          this.$route.params.id,
-          this.$route.query
+    /**
+     * Initialize the compnent's data.
+     */
+    async initializeComponent() {
+      await this.getResource()
+      this.initialLoading = false
+    },
+
+    /**
+     * Get the resource information.
+     */
+    getResource() {
+      this.resource = null
+
+      return Minimum(
+        axios.get(
+          '/api/' + this.resourceName + '/' + this.resourceId + '/inventories'
         )
-        this.resource = data.data
-        this.meta = data.meta
-        this.loaded = true
-      } catch ({ response }) {
-        console.error(response)
-        this.loaded = true
-      }
-    },
-    async submit() {
-      const data = await this.$refs[this.formRef].submit()
-      try {
-        this.loading = true
-        let res = await updateResource(this.$route.params.id, data)
-        if (res.status === 200) {
-          this.$router.push({
-            name: this.$route.meta.DetailRouterName,
-            params: { id: this.$route.params.id },
-            query: { with_trashed: this.withTrashed }
-          })
+      )
+        .then(({ data }) => {
+          this.resource = data
+          this.loading = false
+        })
+        .catch(error => {
+          if (error.response.status >= 500) {
+            this.$Bus.$emit('error', error.response.data.message)
+            return
+          }
+
+          if (error.response.status === 404 && this.initialLoading) {
+            this.$router.push({ name: '404' })
+            return
+          }
+
+          if (error.response.status === 403) {
+            this.$router.push({ name: '403' })
+            return
+          }
+
           this.$message({
-            message: '更新成功',
-            type: 'success'
+            message: 'This resource no longer exists',
+            type: 'error'
           })
-        }
-        this.loading = false
-      } catch ({ response }) {
-        console.error(response)
-        this.loading = false
-      }
+
+          this.$router.push({
+            name: 'index',
+            params: { resourceName: this.resourceName }
+          })
+        })
     },
-    reset() {
-      this.$refs[this.formRef].reset()
+
+    /**
+     * Resolve the component name.
+     */
+    resolveComponentName() {
+      return this.resource.type === 1 ? 'take-form' : 'put-form'
     }
   },
-  async created() {
-    await this.fetchResource()
+
+  computed: {
+    resourceId() {
+      return _.get(this, '$route.params.id')
+    },
+    resourceName() {
+      return _.get(this, '$route.meta.ResourceName')
+    },
+
+    title() {
+      return _.get(this, '$route.meta.Title', this.resourceName)
+    }
   }
 }
 </script>

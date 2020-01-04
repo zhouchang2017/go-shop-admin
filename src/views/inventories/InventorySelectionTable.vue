@@ -142,8 +142,17 @@ export default {
       },
       deep: true
     },
-    items: function() {
-      this.toggleSelection()
+    resources: {
+      handler: function(v) {
+        this.toggleSelection()
+      },
+      immediate: true
+    },
+    items: {
+      handler: function(v) {
+        this.toggleSelection()
+      },
+      immediate: true
     },
     shopId: function() {
       this.$set(this.filters, 'shops', [this.shopId])

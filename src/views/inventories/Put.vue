@@ -1,12 +1,11 @@
 <template>
-  <div class="flex flex-col">
-    <div class="w-full">
-      <div class="font-bold text-2xl text-gray-700 mb-3 uppercase">
+  <div :class="[updating ? 'card' : 'flex w-full']">
+    <div class="card-head" v-if="updating">
+      <div class="card-head__title">
         入库操作
       </div>
     </div>
-
-    <el-form :ref="formName" :model="resource" :rules="rules">
+    <el-form :ref="formName" :model="resource" :rules="rules" class="w-full">
       <div class="w-full p-6">
         <el-form-item label="门店" prop="shop_id">
           <el-select v-model="resource.shop_id" placeholder="请选择门店">
@@ -137,12 +136,11 @@
     <div class="fixed bottom-0 left-0 w-full sm:pl-64">
       <div class="flex w-full bg-white p-3">
         <div class="ml-auto"></div>
-        <el-button @click="reset">Reset</el-button>
         <el-button
           :loading="isWorking"
           @click="submitViaCreateResource"
           type="primary"
-          >Create</el-button
+          >{{ updating ? 'Update' : 'Create' }}</el-button
         >
       </div>
     </div>
@@ -154,6 +152,10 @@ export default {
   name: 'resource-create-page',
   components: {
     'item-selection-table': () => import('./ItemSelectionTable')
+  },
+  props: {
+    updating: Boolean,
+    originalResource: Object
   },
   data() {
     let checkItems = (rule, value, callback) => {
@@ -186,12 +188,19 @@ export default {
       isWorking: false
     }
   },
+  mounted() {
+    if (this.updating && !_.isNil(this.originalResource)) {
+      this.fill()
+    }
+  },
   methods: {
     async submitViaCreateResource(e) {
       this.submittedViaCreateResource = true
       this.$refs[this.formName].validate(async valid => {
         if (valid) {
-          await this.createResource()
+          this.updating
+            ? await this.updateResource()
+            : await this.createResource()
         } else {
           this.$message({
             message: 'There was a problem submitting the form.',
@@ -238,14 +247,47 @@ export default {
       this.isWorking = false
     },
 
+    async updateResource() {
+      this.isWorking = true
+
+      try {
+        const {
+          data: { redirect }
+        } = await this.createRequest()
+
+        this.$message({
+          message: '更新成功',
+          type: 'success'
+        })
+
+        this.$router.push({ path: redirect })
+      } catch (error) {
+        this.submittedViaCreateResource = true
+        this.isWorking = false
+
+        if (error.response.status == 422) {
+          console.log(error.response)
+          // this.validationErrors = new Errors(error.response.data.errors)
+          this.$message({
+            message: 'There was a problem submitting the form.',
+            type: 'error'
+          })
+        }
+      }
+
+      this.submittedViaCreateResource = true
+      this.isWorking = false
+    },
+
     /**
      * Send a create request for this resource
      */
     createRequest() {
-      return axios.post(
-        `${this.$route.meta.PutEndpoint}`,
-        this.createResourceFormData()
-      )
+      return axios.post(this.createEndpoint, this.createResourceFormData())
+    },
+
+    updateRequest() {
+      return axios.put(this.updateEndpoint, this.createResourceFormData())
     },
 
     /**
@@ -286,12 +328,30 @@ export default {
           this.resource.items.splice(index, 1)
         }
       }
+    },
+    fill() {
+      this.resource.items = this.originalResource.items.map(item => {
+        return {
+          visible: false,
+          ...item
+        }
+      })
+      this.resource.shop_id = this.originalResource.shop.id
     }
   },
   computed: {
     // 资源名称
     resourceName() {
       return _.get(this, '$route.meta.ResourceName')
+    },
+    resourceId() {
+      return _.get(this, 'originalResource.id')
+    },
+    createEndpoint() {
+      return '/inventory_actions/put'
+    },
+    updateEndpoint() {
+      return `/inventory_actions/${this.resourceId}/put`
     },
     countSelectionItem() {
       return _.get(this, 'resource.items', []).length
@@ -302,8 +362,7 @@ export default {
     shops() {
       return _.get(this, '$user.shops', [])
     }
-  },
-  mounted() {}
+  }
 }
 </script>
 

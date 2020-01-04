@@ -109,6 +109,12 @@ export default {
       },
       deep: true
     },
+    resources: {
+      handler: function(v) {
+        this.toggleSelection()
+      },
+      immediate: true
+    },
     items: function() {
       this.toggleSelection()
     }
