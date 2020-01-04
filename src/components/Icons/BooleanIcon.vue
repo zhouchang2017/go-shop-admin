@@ -22,20 +22,20 @@ export default {
   props: {
     value: {
       type: Boolean,
-      default: false,
+      default: false
     },
 
     viewBox: {
-      default: '0 0 24 24',
+      default: '0 0 24 24'
     },
 
     height: {
-      default: 24,
+      default: 24
     },
 
     width: {
-      default: 24,
-    },
-  },
+      default: 24
+    }
+  }
 }
 </script>

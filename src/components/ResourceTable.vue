@@ -121,7 +121,12 @@
               class="cursor-pointer inline-block text-gray-500 hover:text-blue-500 mr-3 focus:outline-none"
               title="查看"
             >
-              <icons-icon width="22" height="18" viewBox="0 0 22 16" type="i-view" />
+              <icons-icon
+                width="22"
+                height="18"
+                viewBox="0 0 22 16"
+                type="i-view"
+              />
             </router-link>
             <router-link
               v-if="row.meta.AuthorizedToUpdate"
@@ -162,7 +167,6 @@
 </template>
 
 <script>
-
 import { now } from '@/utils/time'
 export default {
   name: 'resource-table',

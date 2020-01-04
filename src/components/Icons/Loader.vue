@@ -5,13 +5,13 @@ export default {
     width: {
       type: [Number, String],
       required: false,
-      default: 50,
+      default: 50
     },
     fillColor: {
       type: String,
       required: false,
-      default: 'currentColor',
-    },
+      default: 'currentColor'
+    }
   },
   render(h) {
     return (
@@ -90,6 +90,6 @@ export default {
         </circle>
       </svg>
     )
-  },
+  }
 }
 </script>

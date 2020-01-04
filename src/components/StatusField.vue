@@ -22,7 +22,7 @@ export default {
         ].includes(value)
       }
     },
-    color: String,
+    color: String
   },
 
   data() {

@@ -8,11 +8,7 @@
         @on-force-delete="onForceDelete"
       />
 
-      <div
-        id="产品类目详情"
-        class="card mb-6"
-        v-loading="loading"
-      >
+      <div id="产品类目详情" class="card mb-6" v-loading="loading">
         <div class="card-body">
           <div class="card-item">
             <div class="card-item__label">ID</div>
@@ -34,10 +30,7 @@
               {{ resource.updated_at | timeStr }}
             </div>
           </div>
-          <div
-            class="card-item"
-            v-if="resource.deleted_at"
-          >
+          <div class="card-item" v-if="resource.deleted_at">
             <div class="card-item__label">删除时间</div>
             <div class="card-item__content">
               {{ resource.deleted_at | timeStr }}
@@ -56,10 +49,7 @@
       />
 
       <div class="w-full flex items-center mb-3">
-        <div
-          class="font-bold text-2xl text-gray-700 uppercase"
-          id="销售属性"
-        >
+        <div class="font-bold text-2xl text-gray-700 uppercase" id="销售属性">
           销售属性
         </div>
 
@@ -81,55 +71,37 @@
         highlight-current-row
         style="width: 100%;"
       >
-        <el-table-column
-          label="ID"
-          prop="id"
-          sortable
-          align="left"
-        >
+        <el-table-column label="ID" prop="id" sortable align="left">
           <template slot-scope="scope">
             <span class="font-bold">{{ scope.row.id }}</span>
           </template>
         </el-table-column>
 
-        <el-table-column
-          label="名称"
-          prop="name"
-          align="left"
-        >
+        <el-table-column label="名称" prop="name" align="left">
           <template slot-scope="scope">
             <span class="font-bold">{{ scope.row.name }}</span>
           </template>
         </el-table-column>
 
-        <el-table-column
-          label="权重"
-          prop="sort"
-          sortable
-          align="left"
-        >
+        <el-table-column label="权重" prop="sort" sortable align="left">
           <template slot-scope="scope">
             <span class="font-bold">{{ scope.row.sort }}</span>
           </template>
         </el-table-column>
-        <el-table-column
-          label="属性值"
-          prop="values"
-          align="left"
-        >
+        <el-table-column label="属性值" prop="values" align="left">
           <template slot-scope="{ row }">
             <div class="flex flex-row">
-              <div
-                v-for="value in row.values"
-                :key="value.id"
-              >
+              <div v-for="value in row.values" :key="value.id">
                 <el-tooltip
                   class="item"
                   effect="dark"
                   :content="value.code"
                   placement="top"
                 >
-                  <code class="markdown inline-block whitespace-no-wrap text-80 p-1 bg-30 hover:bg-white hover:font-bold hover:text-primary rounded mr-3 text-xs">{{ value.value }}</code>
+                  <code
+                    class="markdown inline-block whitespace-no-wrap text-80 p-1 bg-30 hover:bg-white hover:font-bold hover:text-primary rounded mr-3 text-xs"
+                    >{{ value.value }}</code
+                  >
                 </el-tooltip>
               </div>
             </div>
@@ -155,10 +127,7 @@
                 @click="deleteOptionHandle(row)"
                 class="text-gray-500 hover:text-blue-500"
               >
-                <icons-icon
-                  viewBox="0 0 24 20"
-                  type="i-delete"
-                />
+                <icons-icon viewBox="0 0 24 20" type="i-delete" />
               </button>
             </div>
           </template>
@@ -191,7 +160,7 @@ export default {
     HashNav: () => import('@/components/HashNav'),
     HashNavItem: () => import('@/components/HashNavItem')
   },
-  data () {
+  data() {
     return {
       createDialogVisible: false,
       option: null
@@ -202,11 +171,11 @@ export default {
     deleteResource,
     forceDeleteResource,
     restoreResource,
-    showEdit (option) {
+    showEdit(option) {
       this.option = option
       this.createDialogVisible = true
     },
-    async deleteOptionHandle (option) {
+    async deleteOptionHandle(option) {
       this.$confirm(`是否删除[${option.name}]销售属性`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -231,21 +200,21 @@ export default {
               this.$message.error(JSON.stringify(response.data))
             })
         })
-        .catch(() => { })
+        .catch(() => {})
     },
-    onAddOption (option) {
+    onAddOption(option) {
       if (!_.has(this, 'resource')) {
         this.$set(this, 'resource.options', [])
       }
       this.resource.options.push(option)
     },
-    onUpdateOption (option) {
+    onUpdateOption(option) {
       let index = this.resource.options.findIndex(item => item.id === option.id)
       if (index >= 0) {
         this.resource.options.splice(index, 1, option)
       }
     },
-    onClose () {
+    onClose() {
       this.option = null
     }
   }
