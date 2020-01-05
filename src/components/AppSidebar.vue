@@ -215,7 +215,7 @@
               class="h-8 w-8 rounded-full object-cover"
             />
             <span class="ml-4 mr-2 text-sm font-medium text-gray-800">
-              Monica White
+              {{ $user.nickname }}
             </span>
           </div>
           <div class="mt-4">

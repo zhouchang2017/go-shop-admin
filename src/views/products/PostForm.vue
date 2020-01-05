@@ -284,7 +284,6 @@ export default {
 
     // 当前类目发生变化
     categoryChange() {
-      console.log('categoryChange')
       // reset
       this.optionsChange([])
       this.resource.selectionOptions.splice(0)

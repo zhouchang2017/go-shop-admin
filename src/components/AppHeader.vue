@@ -31,7 +31,7 @@
           <span
             class="hidden lg:inline ml-4 mr-2 text-sm font-medium text-white"
           >
-            Monica White
+            {{ $user.nickname }}
           </span>
           <svg
             class="ml-2 h-6 w-6 fill-current text-gray-400 lg:ml-auto"

@@ -194,8 +194,6 @@ export default {
      */
     async initializeComponent() {
       await this.getResource()
-      await this.getActions()
-
       this.initialLoading = false
     },
 
@@ -206,9 +204,10 @@ export default {
       this.resource = null
 
       return Minimum(axios.get('/' + this.resourceName + '/' + this.resourceId))
-        .then(({ data: { panels, resource } }) => {
+        .then(({ data: { panels, resource, actions } }) => {
           this.panels = panels
           this.resource = resource
+          this.actions = actions
           this.loading = false
         })
         .catch(error => {
@@ -239,28 +238,10 @@ export default {
     },
 
     /**
-     * Get the available actions for the resource.
-     */
-    getActions() {
-      this.actions = []
-
-      //   return axios
-      //     .get('/nova-api/' + this.resourceName + '/actions', {
-      //       params: {
-      //         resourceId: this.resourceId,
-      //       },
-      //     })
-      //     .then(response => {
-      //       this.actions = _.filter(response.data.actions, a => a.showOnDetail)
-      //     })
-    },
-
-    /**
      * Handle an action executed event.
      */
     async actionExecuted() {
       await this.getResource()
-      await this.getActions()
     },
 
     /**

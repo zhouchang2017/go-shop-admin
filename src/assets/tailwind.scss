@@ -1,3 +1,4 @@
+/* purgecss start ignore */
 @tailwind base;
 
 @tailwind components;
@@ -180,5 +181,7 @@ $--dialog-box-shadow: theme('boxShadow.lg');
     @apply w-4/5;
   }
 }
+
+/* purgecss end ignore */
 
 @tailwind utilities;

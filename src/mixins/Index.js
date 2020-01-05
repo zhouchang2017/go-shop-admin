@@ -69,7 +69,6 @@ export default {
     // 搜索
     performSearch(event) {
       this.debouncer(() => {
-        console.log(event)
         // Only search if we're not tabbing into the field
         if (event.which != 9) {
           this.updateQueryString({

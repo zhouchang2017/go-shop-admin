@@ -239,7 +239,6 @@ export default {
   },
   mounted() {
     // 遍历写缓存
-    console.log(this.resource)
     this.resource.items.forEach(item => {
       this.setCache(item)
     })

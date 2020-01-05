@@ -122,7 +122,6 @@ export default {
         this.isWorking = false
 
         if (error.response.status == 422) {
-          console.log(error.response)
           // this.validationErrors = new Errors(error.response.data.errors)
           this.$message({
             message: 'There was a problem submitting the form.',
