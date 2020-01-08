@@ -117,6 +117,11 @@
           :name="panel.name"
           :key="index"
         />
+        <nav-actions
+          :actions="actions"
+          :resourceName="resourceName"
+          :selectedResources="selectedResources"
+        />
       </hash-nav>
     </div>
   </div>
@@ -336,6 +341,14 @@ export default {
 
     title() {
       return _.get(this, '$route.meta.Title', this.resourceName)
+    },
+
+    shouldShowActions() {
+      return _.get(this, 'actions', []).length > 0
+    },
+
+    selectedResources() {
+      return [this.resourceId]
     },
 
     /**
