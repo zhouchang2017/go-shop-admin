@@ -12,6 +12,7 @@
           :resourceName="resourceName"
           :action="action"
           :selectedResources="selectedResources"
+          @actionExecuted="() => $emit('actionExecuted')"
         />
       </li>
     </ul>

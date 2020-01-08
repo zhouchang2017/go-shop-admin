@@ -121,6 +121,7 @@
           :actions="actions"
           :resourceName="resourceName"
           :selectedResources="selectedResources"
+          @actionExecuted="actionExecuted"
         />
       </hash-nav>
     </div>
