@@ -1,7 +1,7 @@
 <template>
-  <div v-if="filteredCards.length > 0" class="flex flex-wrap -mx-3">
+  <div v-if="cards.length > 0" class="flex flex-wrap -mx-3">
     <card-wrapper
-      v-for="card in filteredCards"
+      v-for="card in cards"
       :card="card"
       :size="size"
       :resource="resource"
@@ -43,23 +43,6 @@ export default {
     lens: {
       lens: String,
       default: ''
-    }
-  },
-
-  components: {
-    'card-wrapper': () => import('@/components/CardWrapper')
-  },
-
-  computed: {
-    /**
-     * Determine whether to show the cards based on their onlyOnDetail configuration
-     */
-    filteredCards() {
-      if (this.onlyOnDetail) {
-        return _.filter(this.cards, c => c.onlyOnDetail == true)
-      }
-
-      return _.filter(this.cards, c => c.onlyOnDetail == false)
     }
   }
 }

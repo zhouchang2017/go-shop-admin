@@ -1,5 +1,21 @@
 <template>
   <div class="flex flex-col">
+    <div v-if="shouldShowCards">
+      <cards
+        v-if="smallCards.length > 0"
+        :cards="smallCards"
+        class="mb-3"
+        :resource-name="resourceName"
+      />
+
+      <cards
+        v-if="largeCards.length > 0"
+        :cards="largeCards"
+        size="large"
+        :resource-name="resourceName"
+      />
+    </div>
+
     <!-- Head Title -->
     <div class="w-full flex items-center mb-3">
       <div class="font-bold text-2xl text-gray-700 uppercase">{{ title }}</div>
@@ -184,12 +200,13 @@
 <script>
 import Index from '@/mixins/Index'
 import Filterable from '@/mixins/Filterable'
+import HasCards from '@/mixins/HasCards'
 import Minimum from '@/utils/minimum'
 import { now } from '@/utils/time'
 
 export default {
   name: 'Index',
-  mixins: [Index, Filterable],
+  mixins: [Index, HasCards, Filterable],
 
   props: {
     // 表格行key

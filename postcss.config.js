@@ -17,9 +17,11 @@ module.exports = {
     process.env.NODE_ENV === 'production'
       ? cssnano({ preset: 'default' })
       : null,
-    purgecss({
-      content: ['./src/**/*.html', './src/**/*.vue', './src/**/*.jsx'],
-      defaultExtractor: content => content.match(/[\w-/:]+(?<!:)/g) || []
-    })
+    process.env.NODE_ENV === 'production'
+      ? purgecss({
+          content: ['./src/**/*.html', './src/**/*.vue', './src/**/*.jsx'],
+          defaultExtractor: content => content.match(/[\w-/:]+(?<!:)/g) || []
+        })
+      : null
   ]
 }

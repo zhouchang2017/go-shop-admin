@@ -15,7 +15,6 @@ export default {
     actions: [],
     lenses: [],
     pages: [],
-    cards: [],
     search: '',
     orderBy: '',
     orderByDirection: '',
