@@ -182,6 +182,10 @@ $--dialog-box-shadow: theme('boxShadow.lg');
   }
 }
 
+.el-drawer__body{
+  @apply overflow-y-auto;
+}
+
 /* purgecss end ignore */
 
 @tailwind utilities;

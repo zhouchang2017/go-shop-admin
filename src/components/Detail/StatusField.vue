@@ -1,14 +1,18 @@
 <template>
-  <div :class="`text-${field.text_align} flex items-center h-full`">
-    <div :class="warpClass"></div>
-    <div>{{ value }}</div>
-  </div>
+  <panel-item :field="field">
+    <div
+      slot="value"
+      :class="`text-${field.text_align} flex items-center h-full`"
+    >
+      <div :class="warpClass"></div>
+      <div>{{ value }}</div>
+    </div>
+  </panel-item>
 </template>
 
 <script>
 export default {
-  props: ['resourceName', 'field'],
-
+  props: ['resource', 'resourceName', 'resourceId', 'field'],
   computed: {
     options() {
       return _.get(this, 'field.options')

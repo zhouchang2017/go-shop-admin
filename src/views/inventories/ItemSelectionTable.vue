@@ -10,22 +10,6 @@
           v-model.trim="search"
         />
       </div>
-      <div class="flex items-center ml-auto pr-3 text-gray-500">
-        <filter-box zIndex="100" :count="activeFilterCount">
-          <filter-box-item name="创建时间">
-            <el-date-picker
-              size="mini"
-              value-format="yyyy-MM-dd HH:mm:ss"
-              v-model="filters.created_at"
-              type="daterange"
-              range-separator="至"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期"
-            >
-            </el-date-picker>
-          </filter-box-item>
-        </filter-box>
-      </div>
     </div>
     <el-table
       :ref="tableName"
