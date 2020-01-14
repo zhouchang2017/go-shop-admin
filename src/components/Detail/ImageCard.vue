@@ -1,28 +1,23 @@
 <template>
-  <div class="flex flex-wrap">
+  <div>
     <div
       class="w-24 h-24 relative hover-trigger rounded overflow-hidden mr-2 mb-2"
-      v-for="(image, index) in images"
-      :key="index"
     >
-      <el-image
-        fit="cover"
-        class="h-full"
-        :src="resolveImageUrl(image)"
-        lazy
-      ></el-image>
+      <el-image fit="cover" class="h-full" :src="value.url" lazy></el-image>
       <div
         class="absolute hover-target w-full h-full top-0 hover-target__actions"
       >
         <div class="flex h-full items-center justify-center text-30">
           <div
-            @click="handlePictureCardPreview(image)"
+            v-if="shouldShowPreview"
+            @click="dialogVisible = true"
             class="flex1 appearance-none cursor-pointer text-gray-500 hover:text-white"
           >
             <icons-icon class="h-6 w-6" type="icons-zoom" />
           </div>
           <div
-            @click="handleDownload(image)"
+            v-if="shouldShowDownload"
+            @click.prevent="handleDownload"
             class="flex1 ml-3 appearance-none cursor-pointer text-gray-500 hover:text-white"
           >
             <icons-icon class="h-6 w-6" type="icons-download" />
@@ -30,50 +25,51 @@
         </div>
       </div>
     </div>
-    <el-dialog :visible.sync="dialogVisible">
-      <el-image fit="cover" width="100%" :src="dialogImageUrl" lazy></el-image>
+    <el-dialog :visible.sync="dialogVisible" v-if="shouldShowPreview">
+      <el-image fit="cover" width="100%" :src="value.url" lazy></el-image>
     </el-dialog>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'ImageList',
   props: {
-    images: {
-      type: Array,
-      default: () => []
+    value: {
+      type: Object,
+      required: true
+    },
+    showPreview: {
+      type: Boolean,
+      default: true
+    },
+    showDownload: {
+      type: Boolean,
+      default: true
     }
   },
-  data() {
-    return {
-      dialogImageUrl: '',
-      dialogVisible: false
-    }
-  },
+  data: () => ({
+    dialogVisible: false
+  }),
   methods: {
-    handlePictureCardPreview(file) {
-      this.dialogImageUrl = `${this.$qiniuUrl}/${file.key}`
+    handlePictureCardPreview() {
       this.dialogVisible = true
     },
-    handleDownload(file) {
-      console.log(file)
+    handleDownload() {
       let link = document.createElement('a')
-      link.href = file.url
-      link.style = 'display: none'
-      link.download = file.name
+      link.href = this.value.url
+      link.download = this.value.name || 'download'
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-      window.URL.revokeObjectURL(file.url)
-    },
-    resolveImageUrl(image) {
-      return `${this.$qiniuUrl}/${image.key}`
     }
   },
   computed: {
-    $qiniuUrl() {
-      return process.env.VUE_APP_QINIU_DOMAIN
+    shouldShowPreview() {
+      return this.value.url === '' ? false : this.showPreview
+    },
+
+    shouldShowDownload() {
+      return this.value.url === '' ? false : this.showDownload
     }
   }
 }
