@@ -140,62 +140,63 @@ export default {
       const isLt10M = file.size / 1024 / 1024 < 10
 
       if (!isJPG) {
-        error('上传头像图片只能是 JPG/PNG 格式!')
+        this.$message.error('上传头像图片只能是 JPG/PNG 格式!')
       }
       if (!isLt10M) {
-        error('上传头像图片大小不能超过 10MB!')
+        this.$message.error('上传头像图片大小不能超过 10MB!')
       }
       return isJPG && isLt10M
     },
     onSuccessHandle(response, file) {
-      _.each(response, (value, key) => {
-        if (key !== 'url') {
-          file[key] = value
-        }
-      })
-      this.onUploadFilesChange()
+      setTimeout(() => {
+        console.log(file)
+        const { domain, key } = response
+        file.url = `${domain}/${key}`
+
+        this.images.push({
+          ...response,
+          url: `${domain}/${key}`,
+          status: file.status,
+          uid: file.uid
+        })
+
+        this.onUploadFilesChange()
+      }, 500)
     },
     onUploadFilesChange() {
-      // key bucket drive
-      let values = this.uploadFiles.map(item => {
-        let obj = { key: item.key }
-        if (_.has(item, 'bucket')) {
-          obj.bucket = item.bucket
-        }
-        if (_.has(item, 'drive')) {
-          obj.drive = item.drive
-        }
-        return obj
-      })
-
       this.$emit(
         'input',
-        _.isArray(this.value) || _.isNull(this.value) ? values : values[0]
+        _.isArray(this.value) || _.isNull(this.value)
+          ? this.images
+          : this.images[0]
       )
     },
-
-    itemTransfar(item) {
-      if (!_.has(item, 'key')) {
-        return new Error('图片列表元素项必须包含key字段')
+    resolverValue(value) {
+      return {
+        url: `${_.get(value, 'domain')}/${_.get(value, 'key')}`,
+        ...value
       }
-      let cloneItem = _.cloneDeep(item)
-      if (!_.has(item, 'url') && _.has(item, 'key')) {
-        cloneItem.url = `${this.$qiniuUrl}/${item.key}`
-      }
-      if (!_.has(item, 'name')) {
-        cloneItem.name = item.key
-      }
-      return cloneItem
     },
     valueInit() {
+      // 仅为一个字符串，则视为外链
+      if (_.isString(this.value)) {
+        this.images = [this.resolverStringValue(this.value)]
+        return
+      }
       if (_.isArray(this.value)) {
-        this.images = this.value.map(item => this.itemTransfar(item))
+        this.images = this.value.map(item =>
+          _.isString(item)
+            ? this.resolverStringValue(item)
+            : this.resolverValue(item)
+        )
         return
       }
       if (_.isObject(this.value)) {
-        this.images.push(this.itemTransfar(this.value))
-        return
+        this.images = [this.resolverValue(this.value)]
       }
+    },
+    resolverStringValue(value) {
+      return { url: value }
     }
   },
   computed: {

@@ -14,6 +14,11 @@
 <script>
 export default {
   props: ['resourceName', 'field'],
+  methods: {
+    resolveValue(item) {
+      return `${_.get(item, 'domain')}/${_.get(item, 'key')}`
+    }
+  },
   computed: {
     shouldShowImage() {
       return this.type === 'image' && this.value !== ''
@@ -35,10 +40,13 @@ export default {
       if (_.isString(this.field.value)) {
         return this.field.value
       }
-      if (_.isArray(this.field.value) && this.field.length > 0) {
+      if (_.isArray(this.field.value) && this.field.value.length > 0) {
         return _.isString(this.field.value[0])
           ? _.get(this, 'field.value.0')
-          : _.get(this, 'field.value.0.url')
+          : this.resolveValue(_.get(this, 'field.value[0]'))
+      }
+      if (_.isObject(this.field.value)) {
+        return this.resolveValue(_.get(this, 'field.value'))
       }
       return ''
     },

@@ -130,9 +130,14 @@ export default {
       }
       if (_.isArray(this.field.value)) {
         this.value = this.field.value.map(item =>
-          _.isString(item) ? this.resolverStringValue(item) : item
+          _.isString(item)
+            ? this.resolverStringValue(item)
+            : this.resolverValue(item)
         )
         return
+      }
+      if (_.isObject(this.field.value)) {
+        this.value = [this.resolverValue(this.field.value)]
       }
       this.value = []
     },
@@ -148,7 +153,9 @@ export default {
       )
     },
 
-    resolverValue(value) {},
+    resolverValue(value) {
+      return `${_.get(value, 'domain')}/${_.get(value, 'key')}`
+    },
 
     resolverStringValue(value) {
       return { url: value }

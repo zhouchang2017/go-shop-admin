@@ -33,6 +33,14 @@
 <script>
 export default {
   props: ['resource', 'resourceName', 'resourceId', 'field'],
+  methods: {
+    resolverValue(value) {
+      return {
+        url: `${_.get(value, 'domain')}/${_.get(value, 'key')}`,
+        name: _.get(this, 'value.name', '未命名')
+      }
+    }
+  },
   computed: {
     files() {
       if (_.isString(this.field.value)) {
@@ -42,8 +50,11 @@ export default {
         return this.field.value.map(item =>
           _.isString(item)
             ? { url: this.field.value, name: this.field.value }
-            : item
+            : this.resolverValue(item)
         )
+      }
+      if (_.isObject(this.field.value)) {
+        return [this.resolverValue(this.field.value)]
       }
       return []
     },
