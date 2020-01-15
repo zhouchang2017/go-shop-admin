@@ -140,6 +140,9 @@ $--table-font-color: theme('colors.gray-600');
 $--dialog-box-shadow: theme('boxShadow.lg');
 @import '~element-ui/packages/theme-chalk/src/index';
 
+.el-menu.el-menu--horizontal{
+  @apply border-gray-200;
+}
 .el-dialog {
   @apply rounded-lg;
 }

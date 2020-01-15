@@ -101,21 +101,32 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column fixed label="状态">
+        <el-table-column fixed label="状态" prop="status">
           <template slot-scope="{ row }">
             <InventoryStatus :value="row.status" />
           </template>
         </el-table-column>
 
         <el-table-column
-          :formatter="() => 'inventories.qty'"
+          show-overflow-tooltip
+          fixed
+          label="可用/锁定"
+          prop="tag"
+        />
+
+        <el-table-column
+          :formatter="() => 'inventories.total'"
           align="center"
           label="小计"
-          sortable="custom"
           prop="qty"
         >
           <template slot-scope="{ row }">
-            <div :class="{ 'text-red-500': row.qty <= 1 && row.status === 2 }">
+            <div
+              :class="{
+                'text-red-500':
+                  row.qty <= 1 && row.status === 0 && row.tag === '可用'
+              }"
+            >
               {{ row.qty }}
             </div>
           </template>
@@ -129,7 +140,7 @@
             :label="shop.name"
           >
             <template slot-scope="{ row }">
-              {{ getStock(shop.id, row.shops) }}
+              {{ getStock(shop.id, row.shops, row.tag) }}
             </template>
           </el-table-column>
         </el-table-column>
@@ -166,7 +177,13 @@ export default {
     },
     spanArr: [],
     pos: 0,
-    mergeCols: ['code', 'total', 'product.brand.name', 'product.category.name']
+    mergeCols: [
+      'code',
+      'total',
+      'product.brand.name',
+      'product.category.name',
+      'status'
+    ]
   }),
   watch: {
     filters: {
@@ -221,17 +238,24 @@ export default {
           let items = _.get(item, 'inventories', []).map(inventory => {
             return Object.assign({}, root, inventory)
           })
-          t.push(...items)
+
+          t.push(
+            ...items.reduce((res, item) => {
+              res.push({ ...item, tag: '可用', qty: item.qty })
+              res.push({ ...item, tag: '锁定', qty: item.locked_qty })
+              return res
+            }, [])
+          )
           return t
         }, [])
       )
     },
 
     // 获取库存数量
-    getStock(id, shops) {
+    getStock(id, shops, tag) {
       return _.get(
         shops.find(item => item.id === id),
-        'qty',
+        tag === '可用' ? 'qty' : 'locked_qty',
         0
       )
     },

@@ -18,116 +18,85 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="商品列表" class="full">
-          <item-selection-table
-            ResourceName="items"
-            @change="onChange"
-            :items="resource.items"
-          />
-        </el-form-item>
-        <el-form-item
-          :label="`已选商品(${countSelectionItem})`"
-          prop="items"
-          class="full"
-        >
-          <el-table
-            class="rounded-lg shadow-lg"
-            max-height="550"
-            :data="resource.items"
+        <el-form-item label="入库商品" prop="items" class="full">
+          <div class="w-full sm:flex hidden text-gray-500 font-bold">
+            <div class="mr-3 w-2/5">货号</div>
+            <div class="mr-3 w-1/5">数量</div>
+            <div class="w-1/5">状态</div>
+          </div>
+          <div
+            class="flex w-full sm:flex-row flex-col"
+            v-for="(item, index) in resource.items"
+            :key="index"
           >
-            <el-table-column type="index"> </el-table-column>
-            <el-table-column
-              show-overflow-tooltip
-              prop="code"
-              min-width="150"
-              label="货号"
-            >
-            </el-table-column>
-            <el-table-column
-              show-overflow-tooltip
-              label="品牌"
-              prop="product.brand.name"
-            />
-            <el-table-column
-              show-overflow-tooltip
-              label="类目"
-              prop="product.category.name"
-            />
-            <el-table-column label="属性值" align="left">
-              <template slot-scope="{ row }">
-                <div class="flex flex-col items-center">
-                  <div v-for="value in row.option_values" :key="value.id">
-                    <el-tooltip
-                      effect="dark"
-                      :content="value.code"
-                      placement="top"
-                    >
-                      <code
-                        class="markdown block  text-center text-gray-700 p-1 bg-30 hover:bg-gray-300 hover:font-bold  rounded mr-3 text-xs"
-                        >{{ value.value }}</code
-                      >
-                    </el-tooltip>
-                  </div>
-                </div>
-              </template>
-            </el-table-column>
-            <el-table-column prop="qty" label="数量">
-              <template slot-scope="{ row }">
-                <el-input
-                  size="mini"
-                  :min="1"
-                  type="number"
-                  v-model.number="row.qty"
-                  placeholder="请输入数量"
-                ></el-input>
-              </template>
-            </el-table-column>
-            <el-table-column
-              label="操作"
-              align="right"
-              class-name="small-padding fixed-width"
-            >
-              <template slot-scope="{ row }">
-                <div
-                  class="flex flex-row justify-end items-center text-gray-500"
+            <div class="sm:mr-3 sm:w-2/5 flex w-full mb-1 mr-0">
+              <div
+                class="sm:hidden block whitespace-no-wrap text-gray-500 font-bold mr-3"
+              >
+                货号
+              </div>
+              <item-selection
+                class="w-full"
+                v-model="item.item"
+                endpoint="/api/items"
+              />
+            </div>
+            <div class="sm:mr-3 sm:w-1/5 flex w-full mb-1 mr-0">
+              <div
+                class="sm:hidden block whitespace-no-wrap text-gray-500 font-bold mr-3"
+              >
+                数量
+              </div>
+              <el-input
+                class="w-full"
+                :min="1"
+                type="number"
+                v-model.number="item.qty"
+                placeholder="请输入数量"
+              ></el-input>
+            </div>
+            <div class="sm:w-1/5 w-full flex mb-1">
+              <div
+                class="sm:hidden block whitespace-no-wrap text-gray-500 font-bold mr-3"
+              >
+                状态
+              </div>
+              <el-select
+                class="w-full"
+                v-model="item.status"
+                placeholder="请选择状态"
+              >
+                <el-option
+                  v-for="item in status"
+                  :key="item.value"
+                  :label="item.name"
+                  :value="item.value"
                 >
-                  <el-popover placement="top" v-model="row.visible">
-                    <div class="flex p-3">
-                      <p>是否确定删除{{ row.code }}？</p>
-                    </div>
-
-                    <div style="text-align: right; margin: 0">
-                      <el-button
-                        size="mini"
-                        type="text"
-                        @click="row.visible = false"
-                        >取消</el-button
-                      >
-                      <el-button
-                        type="primary"
-                        size="mini"
-                        @click="removeItem(row)"
-                        >确定</el-button
-                      >
-                    </div>
-                    <div
-                      slot="reference"
-                      title="删除"
-                      class="appearance-none cursor-pointer text-70 hover:text-primary"
-                    >
-                      <button
-                        title="删除"
-                        type="button"
-                        class="text-gray-500 hover:text-blue-500"
-                      >
-                        <icons-icon viewBox="0 0 24 20" type="icons-delete" />
-                      </button>
-                    </div>
-                  </el-popover>
-                </div>
-              </template>
-            </el-table-column>
-          </el-table>
+                  <inventory-status :value="item.value" />
+                </el-option>
+              </el-select>
+            </div>
+            <div class="sm:w-1/5 w-full flex mb-1">
+              <div
+                class="sm:hidden block whitespace-no-wrap text-gray-500 font-bold mr-3"
+              >
+                操作
+              </div>
+              <div class="flex sm:ml-3 ml-0 items-center">
+                <button
+                  @click="removeItem(item)"
+                  title="删除"
+                  type="button"
+                  class="text-gray-500 hover:text-blue-500"
+                >
+                  <icons-icon viewBox="0 0 24 20" type="icons-delete" />
+                </button>
+              </div>
+            </div>
+          </div>
+          <el-button type="primary" @click="addItem" size="mini"
+            >继续添加</el-button
+          >
         </el-form-item>
       </div>
     </el-form>
@@ -148,10 +117,14 @@
 </template>
 
 <script>
+import inventory from './inventory'
+
 export default {
   name: 'resource-create-page',
+  mixins: [inventory],
   components: {
-    'item-selection-table': () => import('./ItemSelectionTable')
+    'item-selection': () => import('./ItemSelection'),
+    'inventory-status': () => import('@/views/inventories/Status')
   },
   props: {
     updating: Boolean,
@@ -170,7 +143,13 @@ export default {
     return {
       resource: {
         shop_id: null,
-        items: []
+        items: [
+          {
+            item: null,
+            qty: 1,
+            status: 0
+          }
+        ]
       },
       rules: {
         shop_id: [{ required: true, message: '请选择门店', trigger: 'change' }],
@@ -298,8 +277,9 @@ export default {
         formData.shop_id = this.resource.shop_id
         formData.items = this.resource.items.map(item => {
           return {
-            id: item.id,
-            qty: item.qty
+            id: item.item.id,
+            qty: item.qty,
+            status: item.status
           }
         })
       })
@@ -314,29 +294,35 @@ export default {
         this.resource.items.splice(index, 1)
       }
     },
-    onChange({ checked, obj }) {
-      if (checked) {
-        console.log(obj)
-        this.resource.items.push({
-          qty: 1,
-          visible: false,
-          ...obj
-        })
-      } else {
-        let index = this.resource.items.findIndex(item => item.id === obj.id)
-        if (index >= 0) {
-          this.resource.items.splice(index, 1)
-        }
-      }
-    },
     fill() {
       this.resource.items = this.originalResource.items.map(item => {
+        const { qty, status, ...root } = item
         return {
-          visible: false,
-          ...item
+          qty,
+          status,
+          item: root
         }
       })
       this.resource.shop_id = this.originalResource.shop.id
+    },
+    // 添加属性
+    addItem() {
+      if (!this.resource.items) {
+        this.resource.items = []
+      }
+      const last = _.last(this.resource.items)
+      if (last) {
+        if (last.item == null) {
+          this.$message.error('最后一条入库商品尚未填写完成')
+          return
+        }
+      }
+
+      this.resource.items.push({
+        item: null,
+        qty: 1,
+        status: 0
+      })
     }
   },
   computed: {
