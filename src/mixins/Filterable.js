@@ -1,4 +1,7 @@
 export default {
+  props: {
+    viaResourceName: String
+  },
   methods: {
     // filter组件名称
     resolveFilterComponentName(filter) {
@@ -72,8 +75,11 @@ export default {
   },
 
   computed: {
+    // 资源名称
     resourceName() {
-      return _.get(this, '$route.meta.ResourceName')
+      return _.isNil(this.viaResourceName)
+        ? _.get(this, '$route.meta.ResourceName')
+        : this.viaResourceName
     },
     /**
      * Get the name of the filter query string variable.

@@ -3,8 +3,30 @@ import Minimum from '@/utils/minimum'
 export default {
   mixins: [InteractsWithQueryString],
   props: {
-    ResourceName: {
-      type: String
+    viaResourceName: String,
+    viaResourcesEndpoint: String,
+    viaTitle: String,
+    viaHeadings: Array,
+    loadCards: {
+      type: Boolean,
+      default: true
+    },
+    loadActions: {
+      type: Boolean,
+      default: true
+    },
+    loadLenses: {
+      type: Boolean,
+      default: true
+    },
+    loadPages: {
+      type: Boolean,
+      default: true
+    },
+    // 附加查询参数
+    extendRequestQueryParams: {
+      type: Object,
+      default: () => ({})
     }
   },
   data: () => ({
@@ -83,18 +105,22 @@ export default {
 
     // 获取当前资源可用的聚合页
     getLenses() {
-      this.lenses = []
-      return axios.get(this.lensesEndpoint).then(response => {
-        this.lenses = response.data
-      })
+      if (this.loadLenses) {
+        this.lenses = []
+        return axios.get(this.lensesEndpoint).then(response => {
+          this.lenses = response.data
+        })
+      }
     },
 
     // 获取当前资源可用的自定义页面
     getPages() {
-      this.pages = []
-      return axios.get(this.pagesEndpoint).then(response => {
-        this.pages = response.data
-      })
+      if (this.loadPages) {
+        this.pages = []
+        return axios.get(this.pagesEndpoint).then(response => {
+          this.pages = response.data
+        })
+      }
     },
 
     // 初始化搜索值，从url中
@@ -162,17 +188,21 @@ export default {
   computed: {
     // 资源名称
     resourceName() {
-      return _.isNil(this.ResourceName)
+      return _.isNil(this.viaResourceName)
         ? _.get(this, '$route.meta.ResourceName')
-        : this.ResourceName
+        : this.viaResourceName
     },
     // 资源api
     resourcesEndpoint() {
-      return `/${this.resourceName}`
+      return _.isNil(this.viaResourcesEndpoint)
+        ? `/${this.resourceName}`
+        : this.viaResourcesEndpoint
     },
     // 当前页标题
     title() {
-      return _.get(this, '$route.meta.Title', this.resourceName)
+      return _.isNil(this.viaTitle)
+        ? _.get(this, '$route.meta.Title', this.resourceName)
+        : this.viaTitle
     },
     // Table ref name
     tableName() {
@@ -187,7 +217,8 @@ export default {
         order_direction: this.currentOrderByDirection,
         per_page: this.currentPerPage,
         trashed: this.currentTrashed,
-        page: this.currentPage
+        page: this.currentPage,
+        ...this.extendRequestQueryParams
       }
     },
     // 是否显示cards
@@ -203,10 +234,7 @@ export default {
     shouldShowActions() {
       return !!!this.hiddenAction
     },
-    // card api
-    cardsEndpoint() {
-      return `/cards/${this.resourceName}`
-    },
+
     // 自定义聚合api
     lensesEndpoint() {
       return `/lenses/${this.resourceName}`
@@ -296,7 +324,9 @@ export default {
     },
     // 表头
     headings() {
-      return _.get(this, '$route.meta.Headings', [])
+      return _.isNil(this.viaHeadings)
+        ? _.get(this, '$route.meta.Headings', [])
+        : this.viaHeadings
     }
   }
 }

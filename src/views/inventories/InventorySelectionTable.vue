@@ -29,18 +29,6 @@
               </el-option>
             </el-select>
           </filter-box-item>
-          <filter-box-item name="创建时间">
-            <el-date-picker
-              size="mini"
-              value-format="yyyy-MM-dd HH:mm:ss"
-              v-model="filters.created_at"
-              type="daterange"
-              range-separator="至"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期"
-            >
-            </el-date-picker>
-          </filter-box-item>
         </filter-box>
       </div>
     </div>
@@ -131,7 +119,8 @@ export default {
     return {
       perPage: 10,
       filters: {
-        status: []
+        status: [],
+        qty: { $gt: 0 }
       }
     }
   },

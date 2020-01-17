@@ -110,9 +110,21 @@
         <el-table-column
           show-overflow-tooltip
           fixed
+          align="center"
           label="可用/锁定"
           prop="tag"
-        />
+        >
+          <template slot-scope="{ row }">
+            <div class="flex justify-center">
+              <icons-icon
+                class="text-orange-400"
+                v-if="row.tag === '锁定'"
+                type="icons-lock-close"
+              />
+              <icons-icon v-else type="icons-lock-open" />
+            </div>
+          </template>
+        </el-table-column>
 
         <el-table-column
           :formatter="() => 'inventories.total'"
@@ -177,13 +189,7 @@ export default {
     },
     spanArr: [],
     pos: 0,
-    mergeCols: [
-      'code',
-      'total',
-      'product.brand.name',
-      'product.category.name',
-      'status'
-    ]
+    mergeCols: ['code', 'total', 'product.brand.name', 'product.category.name']
   }),
   watch: {
     filters: {
