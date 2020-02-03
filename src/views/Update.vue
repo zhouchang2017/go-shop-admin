@@ -20,7 +20,7 @@
         <div class="ml-auto"></div>
         <el-button @click="reset">Reset</el-button>
         <el-button @click="submitViaUpdateResource" type="primary"
-          >Create</el-button
+          >Update</el-button
         >
       </div>
     </div>

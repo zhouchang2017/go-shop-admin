@@ -50,7 +50,7 @@ export default {
     },
 
     shouldDisplayAsHtml() {
-      return this.field.asHtml
+      return this.field.as_html
     }
   }
 }

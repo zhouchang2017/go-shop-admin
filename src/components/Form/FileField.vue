@@ -149,7 +149,7 @@ export default {
       _.set(
         formData,
         this.field.attribute,
-        this.limit > 1 ? this.value : this.value[0]
+        this.limit > 1 ? this.resourceValues : this.resourceValues[0]
       )
     },
 
@@ -301,6 +301,13 @@ export default {
 
     shouldShowDownload() {
       return _.get(this, 'field.should_show_download', false)
+    },
+
+    resourceValues() {
+      if (_.get(this, 'field.meta.url')) {
+        return this.value.map(item => this.resolverValue(item))
+      }
+      return this.value
     }
   }
 }
