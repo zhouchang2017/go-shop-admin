@@ -154,6 +154,9 @@ export default {
     },
 
     resolverValue(value) {
+      if (_.has(value, 'url')) {
+        return value.url
+      }
       return `${_.get(value, 'domain')}/${_.get(value, 'key')}`
     },
 
