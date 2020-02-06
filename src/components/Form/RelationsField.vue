@@ -135,13 +135,11 @@ export default {
               } else {
                 let items = res.data.data.filter(item => {
                   if (this.multipleable) {
-                    return this.value.includes(item.id)
+                    return !this.value.includes(item.id)
                   } else {
-                    return item.code !== this.value
+                    return item.id !== this.value
                   }
                 })
-
-                console.log(items)
 
                 this.resources.push(...items)
 
@@ -215,8 +213,7 @@ export default {
     // 请求参数
     resourceRequestQueryString() {
       let query = {
-        page: this.page,
-        per_page: 1
+        page: this.page
       }
       if (this.searchable) {
         query.search = this.search

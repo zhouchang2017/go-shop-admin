@@ -47,11 +47,11 @@ export default {
         return [{ url: this.field.value, name: this.field.value }]
       }
       if (_.isArray(this.field.value)) {
-        return this.field.value.map(item =>
-          _.isString(item)
-            ? { url: this.field.value, name: this.field.value }
+        return this.field.value.map(item => {
+          return _.isString(item)
+            ? { url: item, name: item }
             : this.resolverValue(item)
-        )
+        })
       }
       if (_.isObject(this.field.value)) {
         return [this.resolverValue(this.field.value)]
