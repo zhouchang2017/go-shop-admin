@@ -3,7 +3,7 @@ import Element from 'element-ui'
 
 import './plugins/axios'
 import './plugins/lodash'
-
+import money from './plugins/money'
 import App from './App.vue'
 import router from './router'
 import store from './store'
@@ -11,7 +11,7 @@ import './assets/tailwind.scss'
 import './filters'
 import Global from './mixins/Global'
 Vue.config.productionTip = false
-
+Vue.use(money)
 // 全局自动懒加载组件注册
 // 组件名称规则 dirname-component
 // 例如 components/form/SearchInput.vue => form-search-input

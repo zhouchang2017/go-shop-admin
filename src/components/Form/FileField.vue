@@ -1,107 +1,115 @@
 <template>
   <el-form-item :required="isRequired" :error="firstError" :label="field.name">
-    <el-upload
-      :id="field.attribute"
-      ref="elUpload"
-      :disabled="disabled"
-      :multiple="multiple"
-      :drag="drag"
-      :list-type="listType"
-      :on-preview="handlePreview"
-      :on-success="onSuccessHandle"
-      :on-progress="onProgress"
-      :on-remove="handleRemove"
-      :before-remove="beforeRemove"
-      :before-upload="onBeforeUploadHandle"
-      :data="{ token: field.token }"
-      :on-error="onErrorHandle"
-      :on-exceed="onExceed"
-      :file-list="value"
-      :limit="limit"
-      :action="field.action"
-    >
-      <!-- drag -->
-      <div v-if="drag">
-        <i class="el-icon-upload"></i>
-        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-      </div>
+    <div class="flex flex-wrap">
+      <draggable v-model="value" class="flex flex-wrap">
+        <div
+          class="w-24 h-24 relative  hover-trigger rounded overflow-hidden mr-2 mb-2"
+          v-for="file in value"
+          :key="file.uid"
+        >
+          <el-image fit="cover" class="h-full" :src="file.url" lazy></el-image>
+          <div
+            class="absolute hover-target w-full h-full top-0 hover-target__actions"
+          >
+            <div class="flex h-full items-center justify-center text-30">
+              <div
+                @click="handlePictureCardPreview(file)"
+                class="flex1 mr-2 appearance-none cursor-pointer text-gray-300 hover:text-white"
+              >
+                <icons-icon
+                  class="h-6 w-6"
+                  viewBox="0 2 24 24"
+                  type="icons-zoom"
+                />
+              </div>
 
-      <!-- listType === 'text' -->
-      <button
-        v-if="!drag && listType === 'text'"
-        type="button"
-        class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-1 px-4 rounded inline-flex items-center"
-        slot="default"
-      >
-        <div class="flex items-center">
-          <icons-icon type="icons-upload" class="w-4 h-4 mr-2" />
-          <span class="font-bold">{{ `选择需要上传的${field.name}` }}</span>
+              <div
+                class="flex1 appearance-none cursor-pointer text-gray-300 hover:text-white"
+              >
+                <el-popconfirm
+                  title="确定删除吗？"
+                  @onConfirm="handleRemove(file)"
+                >
+                  <icons-icon
+                    slot="reference"
+                    class="h-6 w-6"
+                    type="icons-delete"
+                  />
+                </el-popconfirm>
+              </div>
+            </div>
+          </div>
         </div>
-      </button>
-      <!-- listType=picture-card -->
-      <i
-        v-if="!drag && listType === 'picture-card'"
-        slot="default"
-        class="flex h-full justify-center items-center hover:text-blue-500"
+      </draggable>
+      <el-upload
+        :id="field.attribute"
+        ref="elUpload"
+        :disabled="disabled"
+        :multiple="multiple"
+        :drag="drag"
+        :list-type="listType"
+        :on-preview="handlePreview"
+        :on-success="onSuccessHandle"
+        :on-progress="onProgress"
+        :on-remove="handleRemove"
+        :before-remove="beforeRemove"
+        :before-upload="onBeforeUploadHandle"
+        :data="{ token: field.token }"
+        :on-error="onErrorHandle"
+        :on-exceed="onExceed"
+        :file-list="value"
+        :limit="limit"
+        :action="field.action"
+        :show-file-list="!!listType"
+        class="flex"
       >
-        <svg
-          class="block"
-          xmlns="http://www.w3.org/2000/svg"
-          width="40"
-          height="40"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+        <!-- drag -->
+        <div v-if="drag">
+          <i class="el-icon-upload"></i>
+          <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+        </div>
+
+        <!-- listType === 'text' -->
+        <button
+          v-if="!drag && listType === 'text'"
+          type="button"
+          class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-1 px-4 rounded inline-flex items-center"
+          slot="default"
         >
-          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-          <circle cx="8.5" cy="8.5" r="1.5"></circle>
-          <polyline points="21 15 16 10 5 21"></polyline>
-        </svg>
-      </i>
-
-      <div class="el-upload__tip" slot="tip">
-        {{ tips }}
-      </div>
-
-      <div
-        v-if="listType === 'picture-card'"
-        class="w-full h-full"
-        slot="file"
-        slot-scope="{ file }"
-      >
-        <el-image
-          fit="cover"
-          class="el-upload-list__item-thumbnail"
-          :src="file.url"
-          lazy
-        ></el-image>
-        <span
-          class="el-upload-list__item-actions flex flex-row items-center justify-center w-full text-10"
+          <div class="flex items-center">
+            <icons-icon type="icons-upload" class="w-4 h-4 mr-2" />
+            <span class="font-bold">{{ `选择需要上传的${field.name}` }}</span>
+          </div>
+        </button>
+        <!-- listType=picture-card -->
+        <div
+          class="w-24 h-24 rounded overflow-hidden flex items-center justify-center border text-gray-500 hover:text-blue-500 hover:border-blue-500"
+          v-if="!drag && listType === null"
         >
-          <div
-            v-if="shouldShowPreview"
-            @click="handlePictureCardPreview(file)"
-            class="flex1 appearance-none cursor-pointer text-gray-500 hover:text-white"
-          >
-            <icons-icon class="h-6 w-6" type="icons-zoom" />
-          </div>
-
-          <div
-            @click="handleRemove(file)"
-            class="flex1 ml-3 appearance-none cursor-pointer text-gray-500 hover:text-white"
-          >
-            <icons-icon
-              class="h-6 w-6"
-              viewBox="0 0 24 20"
-              type="icons-delete"
-            />
-          </div>
-        </span>
-      </div>
-    </el-upload>
+          <i slot="default" class="flex h-full justify-center items-center ">
+            <svg
+              class="block"
+              xmlns="http://www.w3.org/2000/svg"
+              width="40"
+              height="40"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+          </i>
+        </div>
+      </el-upload>
+    </div>
+    <div class="text-gray-500 text-xs">
+      {{ tips }}
+    </div>
     <el-dialog :visible.sync="dialogVisible">
       <el-image fit="cover" width="100%" :src="dialogImageUrl" lazy></el-image>
     </el-dialog>
@@ -113,6 +121,10 @@ import FormField from '@/mixins/FormField'
 import HandlesValidationErrors from '@/mixins/HandlesValidationErrors'
 export default {
   mixins: [FormField, HandlesValidationErrors],
+
+  components: {
+    draggable: () => import('vuedraggable')
+  },
 
   data: () => ({
     value: [],
@@ -253,7 +265,11 @@ export default {
     },
     // 列表显示类型
     listType() {
-      return _.get(this, 'field.list_type', 'text')
+      let type = _.get(this, 'field.list_type', 'text')
+      if (type === 'picture-card') {
+        return null
+      }
+      return type
     },
     // 允许最大上传文件体积
     maxSize() {

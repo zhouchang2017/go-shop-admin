@@ -1,5 +1,7 @@
 <template>
-  <panel-item :field="field" />
+  <panel-item :field="field">
+    <div slot="value" v-html="field.value" class="ql-editor"></div>
+  </panel-item>
 </template>
 
 <script>

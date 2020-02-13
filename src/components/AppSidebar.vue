@@ -29,7 +29,7 @@
           ? 'translate-x-0 ease-out transition-slow'
           : '-translate-x-full ease-in transition-medium'
       "
-      class="z-100 lg:sticky lg:top-16 inset-y-0 fixed left-0 w-64 bg-gray-100 border-r overflow-y-auto  scrolling-touch sm:static sm:block sm:translate-x-0 sm:transition-none"
+      class="z-100 md:sticky md:top-16 inset-y-0 fixed left-0 w-64 bg-gray-100 border-r overflow-y-auto  scrolling-touch sm:static sm:block sm:mt-16 sm:translate-x-0 sm:transition-none"
     >
       <div class="absolute top-0 left-0 pl-4 pt-3 sm:hidden">
         <button @click="close" class="block text-gray-600 hover:text-gray-800">

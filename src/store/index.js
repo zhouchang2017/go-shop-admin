@@ -24,14 +24,16 @@ export default new Vuex.Store({
     routers: [],
     addRouters: [],
     routerLoaded: false,
-    resources: []
+    resources: [],
+    config: {}
   },
   getters: {
     resources: state => state.resources,
     sidebarOpen: state => state.sidebarOpen,
     routerLoaded: state => state.routerLoaded,
     routers: state => state.routers,
-    token: state => state.auth.token
+    token: state => state.auth.token,
+    appConfig: state => state.config
   },
   mutations: {
     TOGGLE_SIDEBAR: (state, flag) => (state.sidebarOpen = flag),
@@ -42,6 +44,9 @@ export default new Vuex.Store({
     },
     SET_RESOURCES: (state, resources) => {
       state.resources = resources
+    },
+    SET_GLOBAL_CONFIG: (state, config) => {
+      state.config = config
     }
   },
   actions: {
@@ -63,8 +68,10 @@ export default new Vuex.Store({
 
     async loadConfig({ commit }) {
       let { data } = await axios.get('/config')
-      commit('SET_RESOURCES', data)
-      return data
+      const { resources, config } = data
+      commit('SET_RESOURCES', resources)
+      commit('SET_GLOBAL_CONFIG', config)
+      return resources
     }
   }
 })

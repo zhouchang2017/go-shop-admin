@@ -8,7 +8,9 @@
       >
         <template slot-scope="{ row }">
           {{ row.option_values[index].value }}
-          <code class="markdown text-60 p-1 bg-30 rounded ml-1 text-xs">
+          <code
+            class="markdown text-gray-500 p-1 bg-gray-200 rounded ml-1 text-xs"
+          >
             {{ row.option_values[index].code }}</code
           >
         </template>
@@ -18,28 +20,32 @@
       <el-table-column prop="code" label="商品编码">
         <template slot="header">
           商品编码
-          <el-tooltip
-            class="item"
-            effect="dark"
-            content="自动填充商品编码"
-            placement="top"
-          >
-            <span @click="autoGenSkusCode">
-              <icons-icon
-                type="i-duplicate"
-                title="自动填充商品编码"
-                class="inline-flex ml-3 appearance-none cursor-pointer text-gray-500 hover:text-gray-700"
-              />
-            </span>
-          </el-tooltip>
+          <el-popover placement="bottom" trigger="click">
+            <div class="w-full">
+              <div class="text-gray-700 mb-3">自动填充商品编码</div>
+              <div class="text-gray-500 mb-1 text-xs">
+                商品编码+销售属性编码
+              </div>
+              <el-button class="w-full" @click="autoGenSkusCode" size="mini"
+                >填充</el-button
+              >
+            </div>
+            <icons-icon
+              slot="reference"
+              type="icons-duplicate"
+              title="自动填充商品编码"
+              class="inline-flex ml-3 appearance-none cursor-pointer text-gray-500 hover:text-blue-500"
+            />
+          </el-popover>
         </template>
         <template slot-scope="{ row }">
-          <input
-            @input="inputHandle(row)"
+          <el-input
+            @change="value => inputHandle(row)"
             v-if="editable"
             type="text"
             class="outline-none focus:outline-none w-full m-1 p-1 rounded"
             v-model="row.code"
+            size="mini"
           />
           <span v-else>{{ row.code }}</span>
         </template>
@@ -47,41 +53,40 @@
       <el-table-column prop="price" label="价格">
         <template slot="header">
           价格
-          <el-popover placement="bottom" trigger="click" v-model="visible">
-            <div class="flex">
-              <div class="el-input el-input--mini mr-3">
-                <el-input
-                  outline
-                  v-if="editable"
+          <el-popover placement="bottom" trigger="click">
+            <div>
+              <div class="text-gray-700 mb-3">批量填充价格</div>
+              <div class="flex flex-col">
+                <form-currency
+                  extraClass="outline-none
+          focus:outline-none w-full rounded"
                   v-model="price"
-                  placeholder="请输入填充价格"
+                  :extraProps="{
+                    size: 'mini'
+                  }"
+                  class="mb-1"
                 />
+                <el-button @click="fillPrice" size="mini">填充</el-button>
               </div>
-              <el-button @click="fillPrice" size="mini">填充</el-button>
             </div>
-            <el-tooltip
+            <icons-icon
               slot="reference"
-              class="item"
-              effect="dark"
-              content="填充商品价格"
-              placement="top"
-            >
-              <icons-icon
-                type="i-edit"
-                class="inline-flex ml-3 appearance-none cursor-pointer text-gray-500 hover:text-gray-700"
-              />
-            </el-tooltip>
+              type="icons-edit"
+              class="inline-flex ml-3 appearance-none cursor-pointer text-gray-500 hover:text-blue-500"
+            />
           </el-popover>
         </template>
         <template slot-scope="{ row }">
-          <input
-            @input="inputHandle(row)"
-            v-if="editable"
-            type="text"
-            class="outline-none focus:outline-none w-full m-1 p-1 rounded"
+          <form-currency
+            extraClass="outline-none
+          focus:outline-none w-full rounded"
             v-model.number="row.price"
+            v-if="editable"
+            @change="v => inputHandle(row)"
+            :extraProps="{
+              size: 'mini'
+            }"
           />
-
           <span v-else>{{ row.price }}</span>
         </template>
       </el-table-column>
@@ -101,7 +106,6 @@ export default {
       type: Boolean
     }
   },
-
   data() {
     return {
       visible: false,
@@ -173,6 +177,7 @@ export default {
     // 缓存sku属性
     setCache(item) {
       // 缓存 code price
+      console.log(item)
       const { code, price, id } = item
       this.$set(this.cachedData, this.getCacheKey(item), { code, price, id })
     },
@@ -185,7 +190,7 @@ export default {
     // 获取缓存唯一键
     getCacheKey(item) {
       return this.sortOptionValues(_.get(item, 'option_values', []))
-        .map(value => `${value.option_id}@${value.code}`)
+        .map(value => `${value.value}@${value.code}`)
         .join('::')
     },
 
@@ -196,11 +201,12 @@ export default {
 
     // 销售属性值排序
     sortOptionValues(values) {
-      return values.sort(
-        (a, b) =>
-          this.getSortByOptionId(b.option_id) -
-          this.getSortByOptionId(a.option_id)
-      )
+      return values
+      // return values.sort(
+      //   (a, b) =>
+      //     this.getSortByOptionId(b.option_id) -
+      //     this.getSortByOptionId(a.option_id)
+      // )
     },
 
     autoGenSkuCode(item) {

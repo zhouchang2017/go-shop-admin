@@ -1,33 +1,16 @@
 <template>
-  <div>
-    <div
-      class="w-24 h-24 relative hover-trigger rounded overflow-hidden mr-2 mb-2"
-    >
-      <el-image fit="cover" class="h-full" :src="value.url" lazy></el-image>
-      <div
-        class="absolute hover-target w-full h-full top-0 hover-target__actions"
-      >
-        <div class="flex h-full items-center justify-center text-30">
-          <div
-            v-if="shouldShowPreview"
-            @click="dialogVisible = true"
-            class="flex1 appearance-none cursor-pointer text-gray-500 hover:text-white"
-          >
-            <icons-icon class="h-6 w-6" type="icons-zoom" />
-          </div>
-          <div
-            v-if="shouldShowDownload"
-            @click.prevent="handleDownload"
-            class="flex1 ml-3 appearance-none cursor-pointer text-gray-500 hover:text-white"
-          >
-            <icons-icon class="h-6 w-6" type="icons-download" />
-          </div>
-        </div>
-      </div>
-    </div>
-    <el-dialog :visible.sync="dialogVisible" v-if="shouldShowPreview">
-      <el-image fit="cover" width="100%" :src="value.url" lazy></el-image>
-    </el-dialog>
+  <div
+    class="w-24 h-24 relative hover-trigger rounded overflow-hidden mr-2 mb-2"
+  >
+    <el-image
+      fit="cover"
+      class="h-full w-full"
+      :src="value.url"
+      lazy
+      @error="loadImageError"
+      @load="loadImageSuccess"
+      v-bind="elImageProps"
+    ></el-image>
   </div>
 </template>
 
@@ -45,10 +28,16 @@ export default {
     showDownload: {
       type: Boolean,
       default: true
+    },
+    previewList: {
+      type: Array,
+      default: () => []
     }
   },
   data: () => ({
-    dialogVisible: false
+    dialogVisible: false,
+    loaded: false,
+    loadErr: false
   }),
   methods: {
     handlePictureCardPreview() {
@@ -61,6 +50,12 @@ export default {
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
+    },
+    loadImageError() {
+      this.loadErr = true
+    },
+    loadImageSuccess() {
+      this.loaded = true
     }
   },
   computed: {
@@ -70,6 +65,18 @@ export default {
 
     shouldShowDownload() {
       return this.value.url === '' ? false : this.showDownload
+    },
+
+    shouldShowIcons() {
+      return this.loaded && !this.loadErr
+    },
+
+    elImageProps() {
+      let props = {}
+      if (this.showPreview && this.previewList.length > 0) {
+        props.previewSrcList = this.previewList
+      }
+      return props
     }
   }
 }

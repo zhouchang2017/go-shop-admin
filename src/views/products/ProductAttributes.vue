@@ -17,7 +17,7 @@
       <span
         @click="remove(index)"
         class="ml-3 block appearance-none cursor-pointer text-gray-500 hover:text-gray-700"
-        ><icons-icon viewBox="0 0 20 20" class="h-4 w-4" type="i-delete"
+        ><icons-icon viewBox="0 0 20 20" class="h-4 w-4" type="icons-delete"
       /></span>
     </div>
 

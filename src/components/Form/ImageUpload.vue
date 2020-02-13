@@ -1,66 +1,84 @@
 <template>
-  <div>
-    <el-upload
-      ref="elUpload"
-      list-type="picture-card"
-      :on-success="onSuccessHandle"
-      :before-upload="onBeforeUploadHandle"
-      :data="qn"
-      :on-error="onErrorHandle"
-      :file-list="images"
-      v-bind="$props"
-    >
-      <i
-        slot="default"
-        class="flex h-full justify-center items-center hover:text-indigo-500"
+  <div class="flex flex-wrap">
+    <draggable v-model="images" class="flex">
+      <div
+        class="w-24 h-24 relative  hover-trigger rounded overflow-hidden mr-2 mb-2"
+        v-for="file in images"
+        :key="file.uid"
       >
-        <svg
-          class="block"
-          xmlns="http://www.w3.org/2000/svg"
-          width="40"
-          height="40"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-          <circle cx="8.5" cy="8.5" r="1.5"></circle>
-          <polyline points="21 15 16 10 5 21"></polyline>
-        </svg>
-      </i>
-      <!-- <i slot="default" class="el-icon-plus"></i> -->
-      <div class="w-full h-full" slot="file" slot-scope="{ file }">
         <el-image
           fit="cover"
-          class="el-upload-list__item-thumbnail"
+          class="h-full w-full"
           :src="file.url"
           lazy
         ></el-image>
-        <span
-          class="el-upload-list__item-actions flex flex-row items-center justify-center w-full text-10"
+        <div
+          class="absolute hover-target w-full h-full top-0 hover-target__actions"
         >
-          <div
-            @click="handlePictureCardPreview(file)"
-            class="flex1 appearance-none cursor-pointer text-gray-500 hover:text-white"
-          >
-            <icons-icon class="h-6 w-6" type="i-zoom" />
+          <div class="flex h-full items-center justify-center text-30">
+            <div
+              @click="handlePictureCardPreview(file)"
+              class="flex1 mr-2 appearance-none cursor-pointer text-gray-300 hover:text-white"
+            >
+              <icons-icon
+                class="h-6 w-6"
+                viewBox="0 2 24 24"
+                type="icons-zoom"
+              />
+            </div>
+
+            <div
+              class="flex1 appearance-none cursor-pointer text-gray-300 hover:text-white"
+            >
+              <el-popconfirm
+                title="确定删除吗？"
+                @onConfirm="handleRemove(file)"
+              >
+                <icons-icon
+                  slot="reference"
+                  class="h-6 w-6"
+                  type="icons-delete"
+                />
+              </el-popconfirm>
+            </div>
           </div>
-          <div
-            @click="handleDownload(file)"
-            class="flex1 ml-3 appearance-none cursor-pointer text-gray-500 hover:text-white"
+        </div>
+      </div>
+    </draggable>
+    <el-upload
+      ref="elUpload"
+      class="w-24 h-24 rounded overflow-hidden flex items-center justify-center border"
+      :on-success="onSuccessHandle"
+      :before-upload="onBeforeUploadHandle"
+      :data="{ token: token }"
+      :show-file-list="false"
+      :on-error="onErrorHandle"
+      :file-list="images"
+      :action="appConfig.qiniu_upload_action"
+      multiple
+    >
+      <div class="w-24 h-24 rounded">
+        <i
+          slot="default"
+          class="flex h-full justify-center items-center text-gray-500 hover:text-blue-500"
+        >
+          <svg
+            class="block"
+            xmlns="http://www.w3.org/2000/svg"
+            width="40"
+            height="40"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
           >
-            <icons-icon class="h-6 w-6" type="i-download" />
-          </div>
-          <div
-            @click="handleRemove(file)"
-            class="flex1 ml-3 appearance-none cursor-pointer text-gray-500 hover:text-white"
-          >
-            <icons-icon class="h-6 w-6" viewBox="0 0 24 20" type="i-delete" />
-          </div>
-        </span>
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+        </i>
       </div>
     </el-upload>
     <el-dialog :visible.sync="dialogVisible">
@@ -72,16 +90,16 @@
 <script>
 import { Upload } from 'element-ui'
 import { getQiniuToken } from '@/api/app'
+import { mapGetters } from 'vuex'
+
 // eslint-disable-next-line no-unused-vars
-let { fileList, ...props } = Upload.props
 export default {
   name: 'ImageUpload',
+  components: {
+    draggable: () => import('vuedraggable')
+  },
   props: {
-    ...props,
-    action: {
-      type: String,
-      default: process.env.VUE_APP_QINIU_UPLOAD_URL
-    },
+    token: String,
     value: {}
   },
   model: {
@@ -93,20 +111,21 @@ export default {
       fileList: [],
       dialogImageUrl: '',
       dialogVisible: false,
-      qn: {
-        token: ''
-        // key: ''
-      },
       // 已存在图片
       images: []
     }
   },
 
+  watch: {
+    images(value, oldValue) {
+      this.onUploadFilesChange()
+    }
+  },
+
   methods: {
     handleRemove(file) {
-      let index = this.uploadFiles.findIndex(item => item.uid === file.uid)
-      this.uploadFiles.splice(index, 1)
-      this.onUploadFilesChange()
+      let index = this.images.findIndex(item => item.uid === file.uid)
+      this.images.splice(index, 1)
     },
     handlePictureCardPreview(file) {
       this.dialogImageUrl = file.url
@@ -149,7 +168,6 @@ export default {
     },
     onSuccessHandle(response, file) {
       setTimeout(() => {
-        console.log(file)
         const { domain, key } = response
         file.url = `${domain}/${key}`
 
@@ -159,8 +177,6 @@ export default {
           status: file.status,
           uid: file.uid
         })
-
-        this.onUploadFilesChange()
       }, 500)
     },
     onUploadFilesChange() {
@@ -177,39 +193,39 @@ export default {
         ...value
       }
     },
-    valueInit() {
+    valueInit(value = null) {
+      if (!value) {
+        value = this.value
+      }
       // 仅为一个字符串，则视为外链
-      if (_.isString(this.value)) {
-        this.images = [this.resolverStringValue(this.value)]
+      if (_.isString(value)) {
+        this.images = [this.resolverStringValue(value)]
         return
       }
-      if (_.isArray(this.value)) {
-        this.images = this.value.map(item =>
+      if (_.isArray(value)) {
+        this.images = value.map(item =>
           _.isString(item)
             ? this.resolverStringValue(item)
             : this.resolverValue(item)
         )
         return
       }
-      if (_.isObject(this.value)) {
-        this.images = [this.resolverValue(this.value)]
+      if (_.isObject(value)) {
+        this.images = [this.resolverValue(value)]
       }
+    },
+    fill(value) {
+      this.valueInit(value)
     },
     resolverStringValue(value) {
       return { url: value }
     }
   },
   computed: {
-    uploadFiles() {
-      return _.get(this.$refs, 'elUpload.uploadFiles', [])
-    },
-    $qiniuUrl() {
-      return process.env.VUE_APP_QINIU_DOMAIN
-    }
+    ...mapGetters(['appConfig'])
   },
   async mounted() {
     this.valueInit()
-    await this.setToken()
   }
 }
 </script>

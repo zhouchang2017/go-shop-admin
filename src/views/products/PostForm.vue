@@ -5,6 +5,11 @@
         <div class="card-head__title">
           基本
         </div>
+        <import-from-taobao
+          class="ml-auto"
+          @fill="fillFromTaobao"
+          :token="token"
+        />
       </div>
       <div class="w-full p-6">
         <el-form-item v-if="updating" label="ID" prop="id">
@@ -57,10 +62,31 @@
           </el-select>
         </el-form-item>
         <el-form-item label="吊牌价" prop="price">
-          <el-input
+          <form-currency
             v-model.number="resource.price"
             placeholder="请输入填充价格"
           />
+        </el-form-item>
+
+        <el-form-item label="排序权重" prop="sort">
+          <el-input-number
+            v-model="resource.sort"
+            :min="0"
+            :max="9999"
+            label="排序权重"
+          ></el-input-number>
+        </el-form-item>
+
+        <el-form-item label="虚拟销量" prop="fake_sales_qty">
+          <el-input-number
+            v-model="resource.fake_sales_qty"
+            :min="0"
+            label="虚拟销量"
+          ></el-input-number>
+        </el-form-item>
+
+        <el-form-item label="上架" prop="on_sale">
+          <el-switch v-model="resource.on_sale"> </el-switch>
         </el-form-item>
       </div>
     </div>
@@ -84,7 +110,13 @@
       </div>
       <div class="w-full p-6">
         <!-- 图集 -->
-        <ImageUpload v-if="loaded" multiple v-model="resource.images" />
+        <ImageUpload
+          ref="imageUpload"
+          v-if="loaded"
+          multiple
+          :token="token"
+          v-model="resource.images"
+        />
       </div>
     </div>
 
@@ -181,11 +213,28 @@
         <Sku v-if="loaded" :resource="resource" editable />
       </div>
     </div>
+
+    <div class="card overflow-hidden mb-6 shadow-none">
+      <div class="card-head">
+        <div class="card-head__title">
+          产品详情
+        </div>
+      </div>
+      <div class="w-full p-6">
+        <quill-editor
+          v-model="resource.description"
+          :action="appConfig.qiniu_upload_action"
+          :token="token"
+        >
+        </quill-editor>
+      </div>
+    </div>
   </el-form>
 </template>
 
 <script>
 import ResourceForm from '@/mixins/ResourceForm'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'post-form',
@@ -194,7 +243,9 @@ export default {
     ProductAttributes: () => import('./ProductAttributes'),
     CustomOptionValueForm: () => import('./CustomOptionValueForm'),
     Sku: () => import('./Sku'),
-    ImageUpload: () => import('@/components/Form/ImageUpload')
+    ImageUpload: () => import('@/components/Form/ImageUpload'),
+    'quill-editor': () => import('@/3rd-components/Quill'),
+    'import-from-taobao': () => import('./ImportFromTaobao')
   },
   data() {
     return {
@@ -212,7 +263,8 @@ export default {
         attributes: [],
         images: [],
         on_sale: true, // 是否可售
-        fake_sales_qty: 0
+        fake_sales_qty: 0, // 虚拟销量
+        sort: 0 // 权重
       },
       rules: {
         name: [{ required: true, message: '请输入产品名称', trigger: 'blur' }],
@@ -237,10 +289,26 @@ export default {
 
       dialogVisible: false,
 
-      currentAddCustomOption: {}
+      currentAddCustomOption: {},
+      token: null
     }
   },
   methods: {
+    fillFromTaobao(resource) {
+      this.resource.name = resource.name
+      this.resource.attributes = resource.attributes
+      this.resource.price = resource.price
+      this.$set(this.resource, 'images', resource.images)
+      this.resource.description = resource.description
+      this.$refs.imageUpload.fill(resource.images)
+    },
+    // 获取七牛云token
+    async fetchQiniuToken() {
+      let data = await axios.get('/qiniu')
+      if (data.status === 200) {
+        this.token = data.data.token
+      }
+    },
     // 当前销售属发生变化
     optionsChange(optionIds) {
       // 更新resource.options
@@ -342,6 +410,7 @@ export default {
     }
   },
   computed: {
+    ...mapGetters(['appConfig']),
     availableOptions() {
       let category = _.find(this.categories, [
         'id',
@@ -369,6 +438,7 @@ export default {
     }
   },
   async created() {
+    await this.fetchQiniuToken()
     this.getCreationInfo()
   }
 }

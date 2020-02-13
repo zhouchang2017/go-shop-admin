@@ -9,6 +9,7 @@
             :value="file"
             :showPreview="shouldShowPreview"
             :showDownload="shouldShowDownload"
+            :previewList="previewList"
           />
         </div>
       </div>
@@ -57,6 +58,9 @@ export default {
         return [this.resolverValue(this.field.value)]
       }
       return []
+    },
+    previewList() {
+      return this.files.map(file => file.url)
     },
     shouldShowImage() {
       return this.type === 'image' && this.value !== ''
