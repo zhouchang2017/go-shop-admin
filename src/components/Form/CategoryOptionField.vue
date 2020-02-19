@@ -23,6 +23,11 @@
             :max="100"
           ></el-input-number>
         </el-form-item>
+        <el-form-item label="缩略图" prop="thumbnail">
+          <el-switch v-model="ruleForm.thumbnail"> </el-switch>
+          <div class="text-gray-500 text-xs">一般用于颜色</div>
+        </el-form-item>
+
         <div class="flex">
           <div class="el-form-item__label">
             属性列表
@@ -105,6 +110,9 @@
       <el-form-item label="属性名称">
         <el-input disabled v-model.trim="opt.name"></el-input>
       </el-form-item>
+      <el-form-item label="缩略图">
+        <el-switch disabled v-model="opt.thumbnail"> </el-switch>
+      </el-form-item>
       <el-form-item label="权重">
         <el-input-number
           disabled
@@ -170,7 +178,8 @@ export default {
     ruleForm: {
       name: '',
       sort: 0,
-      values: []
+      values: [],
+      thumbnail: false
     },
     editIndex: 0,
     rules: {
@@ -184,7 +193,8 @@ export default {
       this.ruleForm = {
         name: '',
         sort: 0,
-        values: []
+        values: [],
+        thumbnail: false
       }
       this.dialogVisible = true
     },

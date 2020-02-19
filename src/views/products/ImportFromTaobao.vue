@@ -24,12 +24,14 @@
           class="mt-6"
           ref="taobaoProductForm"
           :model="resource"
+          label-position="left"
+          label-width="50px"
         >
-          <el-form-item label="名称" prop="name">
+          <el-form-item label="名称" prop="name" class="full">
             <el-input v-model="resource.name"></el-input>
           </el-form-item>
 
-          <el-form-item label="图集" prop="images">
+          <el-form-item label="图集" prop="images" class="full">
             <draggable v-model="resource.images" class="flex flex-wrap">
               <div
                 class="w-24 h-24 relative  hover-trigger rounded overflow-hidden mr-2 mb-2"
@@ -58,15 +60,25 @@
             </draggable>
           </el-form-item>
           <el-form-item label="吊牌价" prop="price">
-            <el-input
+            <form-currency
               v-model.number="resource.price"
               placeholder="请输入填充价格"
             />
           </el-form-item>
 
-          <product-attributes v-model="resource.attributes" />
+          <el-form-item label="基本属性" prop="attributes" class="full">
+            <product-attributes v-model="resource.attributes" />
+          </el-form-item>
 
-          <el-form-item label="详情" prop="description">
+          <el-form-item label="销售属性" prop="options" class="full">
+            <sku-options v-model="resource.options" :token="token" />
+          </el-form-item>
+
+          <el-form-item label="销售规格" prop="items" class="full">
+            <sku-table :data="resource.options" :items="resource.items" />
+          </el-form-item>
+
+          <el-form-item label="详情" prop="description" class="full">
             <quill-editor
               v-model="resource.description"
               :action="appConfig.qiniu_upload_action"
@@ -96,12 +108,15 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import { SKUOptions, SKUTable } from '@/3rd-components/sku'
 
 export default {
   components: {
     'product-attributes': () => import('./ProductAttributes'),
     'quill-editor': () => import('@/3rd-components/Quill'),
-    draggable: () => import('vuedraggable')
+    draggable: () => import('vuedraggable'),
+    'sku-options': SKUOptions,
+    'sku-table': SKUTable
   },
   props: {
     pk: {
@@ -174,7 +189,8 @@ export default {
             this.resource.name = res.data.name
             this.resource.price = res.data.price
             this.resource.attributes = res.data.attributes
-
+            this.resource.options = res.data.options
+            this.resource.items = res.data.items
             // this.resource.options.
             if (_.get(res, 'data.Meta.images', []).length > 0) {
               this.resource.images = res.data.Meta.images
@@ -227,7 +243,7 @@ export default {
           if (_.has(option, 'values')) {
             element += `<div class="ml-3 text-xs text-gray-500 flex flex-row flex-wrap">`
             option.values.forEach(value => {
-              element += `<div class="rounded bg-gray-200 mr-2 px-2 py-1 my-1">${value.value}</div>`
+              element += `<div class="rounded bg-gray-200 mr-2 px-2 py-1 my-1">${value.name}</div>`
             })
             element += `</div>`
           }

@@ -177,7 +177,6 @@ export default {
     // 缓存sku属性
     setCache(item) {
       // 缓存 code price
-      console.log(item)
       const { code, price, id } = item
       this.$set(this.cachedData, this.getCacheKey(item), { code, price, id })
     },
@@ -190,8 +189,8 @@ export default {
     // 获取缓存唯一键
     getCacheKey(item) {
       return this.sortOptionValues(_.get(item, 'option_values', []))
-        .map(value => `${value.value}@${value.code}`)
-        .join('::')
+        .map(value => value.uid)
+        .join('@')
     },
 
     // 通过option_id 获取sort值

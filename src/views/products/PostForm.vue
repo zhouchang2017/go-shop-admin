@@ -49,8 +49,6 @@
             reserve-keyword
             :value-key="pk"
             placeholder="请选择类别名称"
-            @change="categoryChange"
-            :disabled="updating"
           >
             <el-option
               v-for="item in categories"
@@ -88,129 +86,38 @@
         <el-form-item label="上架" prop="on_sale">
           <el-switch v-model="resource.on_sale"> </el-switch>
         </el-form-item>
-      </div>
-    </div>
-    <div class="card overflow-hidden mb-6 shadow-none">
-      <div class="card-head">
-        <div class="card-head__title">
-          展示属性
-        </div>
-      </div>
-      <div class="w-full p-6">
-        <!-- 基本属性 -->
-        <ProductAttributes v-model="resource.attributes" />
-      </div>
-    </div>
 
-    <div class="card overflow-hidden mb-6 shadow-none">
-      <div class="card-head">
-        <div class="card-head__title">
-          图集
-        </div>
-      </div>
-      <div class="w-full p-6">
-        <!-- 图集 -->
-        <ImageUpload
-          ref="imageUpload"
-          v-if="loaded"
-          multiple
-          :token="token"
-          v-model="resource.images"
-        />
-      </div>
-    </div>
-
-    <div
-      v-show="availableOptions.length > 0"
-      class="card overflow-hidden mb-6 shadow-none"
-    >
-      <div class="card-head">
-        <div class="card-head__title">
-          销售属性
-        </div>
-      </div>
-      <div class="w-full p-6">
-        <el-form-item
-          v-show="availableOptions.length"
-          label="选项"
-          prop="selectionOptions"
-        >
-          <el-checkbox-group
-            v-model="resource.selectionOptions"
-            @change="optionsChange"
-          >
-            <el-checkbox
-              :disabled="optionIsSelected(option[pk]) && updating"
-              v-for="option in availableOptions"
-              :key="option[pk]"
-              :label="option[pk]"
-            >
-              {{ option.name }}
-            </el-checkbox>
-          </el-checkbox-group>
+        <el-form-item label="基本属性" prop="attributes">
+          <ProductAttributes v-model="resource.attributes" />
         </el-form-item>
 
-        <CustomOptionValueForm
-          v-model="dialogVisible"
-          :option.sync="currentAddCustomOption"
-        ></CustomOptionValueForm>
-
-        <!--可选属性-->
-        <el-form-item
-          v-for="(option, index) in resource.options"
-          :key="option[pk]"
-          :prop="'options.' + index + '.selectionValues'"
-          :label="`可选${option.name}`"
-          :rules="{
-            type: 'array',
-            min: 1,
-            required: true,
-            message: '至少选择一项' + option.name,
-            trigger: 'change'
-          }"
-        >
-          <el-checkbox-group
-            v-model="option.selectionValues"
-            @change="optionValuesChange(option)"
-          >
-            <el-checkbox
-              :disabled="
-                optionValueIsSelected(option[pk], value.code) && updating
-              "
-              v-for="value in option.availableOptionValues"
-              :key="value.code"
-              :label="value.code"
-            >
-              <span>{{ value.value }}</span>
-              <code
-                class="markdown text-60 p-1 bg-gray-300 rounded ml-1 text-xs"
-                >{{ value.code }}</code
-              >
-            </el-checkbox>
-
-            <el-button
-              class="ml-3"
-              size="mini"
-              @click="showCustomOptionValueForm(option)"
-              >添加自定义{{ option.name }}
-            </el-button>
-          </el-checkbox-group>
+        <el-form-item label="图集" prop="images">
+          <ImageUpload
+            ref="imageUpload"
+            v-if="loaded"
+            multiple
+            :token="token"
+            v-model="resource.images"
+          />
         </el-form-item>
-      </div>
-    </div>
 
-    <div
-      v-show="resource.options.length > 0"
-      class="card overflow-hidden mb-6 shadow-none"
-    >
-      <div class="card-head">
-        <div class="card-head__title">
-          商品列表
-        </div>
-      </div>
-      <div class="w-full p-6">
-        <!-- 商品列表 -->
-        <Sku v-if="loaded" :resource="resource" editable />
+        <el-form-item label="销售属性" prop="options" class="full">
+          <sku-options
+            ref="skuOptions"
+            v-model="resource.options"
+            :on-fetch-options="fetchOptions"
+            :token="token"
+          />
+        </el-form-item>
+
+        <el-form-item label="销售规格" prop="items" class="full">
+          <sku-table
+            class="mt-3"
+            :data="resource.options"
+            :items="resource.items"
+            @on-change-data="handleChangeData"
+          />
+        </el-form-item>
       </div>
     </div>
 
@@ -236,13 +143,26 @@
 import ResourceForm from '@/mixins/ResourceForm'
 import { mapGetters } from 'vuex'
 
+import { SKUOptions, SKUTable } from '@/3rd-components/sku'
+
+const skuTree = [
+  {
+    uid: 10740,
+    name: '颜色'
+  },
+  {
+    uid: 40732,
+    name: '尺寸'
+  }
+]
+
 export default {
   name: 'post-form',
   mixins: [ResourceForm],
   components: {
     ProductAttributes: () => import('./ProductAttributes'),
-    CustomOptionValueForm: () => import('./CustomOptionValueForm'),
-    Sku: () => import('./Sku'),
+    'sku-options': SKUOptions,
+    'sku-table': SKUTable,
     ImageUpload: () => import('@/components/Form/ImageUpload'),
     'quill-editor': () => import('@/3rd-components/Quill'),
     'import-from-taobao': () => import('./ImportFromTaobao')
@@ -295,12 +215,17 @@ export default {
   },
   methods: {
     fillFromTaobao(resource) {
-      this.resource.name = resource.name
-      this.resource.attributes = resource.attributes
-      this.resource.price = resource.price
-      this.$set(this.resource, 'images', resource.images)
-      this.resource.description = resource.description
-      this.$refs.imageUpload.fill(resource.images)
+      this.$nextTick(() => {
+        this.resource.name = resource.name
+        this.resource.attributes = resource.attributes
+        this.resource.price = resource.price
+        this.$set(this.resource, 'images', resource.images)
+        this.$set(this.resource, 'options', resource.options)
+        this.$set(this.resource, 'items', resource.items)
+        this.resource.description = resource.description
+        this.$refs.imageUpload.fill(resource.images)
+        this.$refs.skuOptions.refresh()
+      })
     },
     // 获取七牛云token
     async fetchQiniuToken() {
@@ -309,85 +234,7 @@ export default {
         this.token = data.data.token
       }
     },
-    // 当前销售属发生变化
-    optionsChange(optionIds) {
-      // 更新resource.options
-      const options = optionIds
-        .map(id => {
-          let option = this.resource.options.find(
-            option => option[this.pk] === id
-          )
 
-          if (!option) {
-            // push new option
-            option = _.cloneDeep(
-              this.availableOptions.find(option => option[this.pk] === id)
-            )
-            option.availableOptionValues = option.values || []
-            option.selectionValues = []
-            option.values = []
-          }
-          return option
-        })
-        .sort((a, b) => b.sort - a.sort)
-      this.$set(this.resource, 'options', options)
-    },
-
-    // 当前销售属性值发生变化
-    optionValuesChange(option = {}) {
-      if (_.isEmpty(option)) {
-        this.$set(option, 'values', [])
-        return
-      }
-      // 更新values 数组，与selectionValues保持一致
-      const { selectionValues, availableOptionValues } = option
-      this.$set(
-        option,
-        'values',
-        selectionValues.map(
-          code => availableOptionValues.find(value => value.code === code) || []
-        )
-      )
-    },
-
-    // 当前类目发生变化
-    categoryChange() {
-      // reset
-      this.optionsChange([])
-      this.resource.selectionOptions.splice(0)
-      this.optionValuesChange()
-    },
-
-    // 点击添加自定义属性按钮处理方法
-    showCustomOptionValueForm(option) {
-      this.dialogVisible = true
-      this.$set(this, 'currentAddCustomOption', option)
-    },
-
-    // 从resource.options 提取 option._id 写入 resource.selectionOptions
-    initOptionChecked() {
-      this.resource.options.forEach(option => {
-        this.resource.selectionOptions.push(option[this.pk])
-        // 为option 对象添加 availableOptionValues, 自定义属性值一同合并
-        const categoryOption = _.find(this.availableOptions, [
-          this.pk,
-          option[this.pk]
-        ])
-
-        let values =
-          _.unionBy(
-            [..._.get(categoryOption, 'values', []), ...option.values],
-            'code'
-          ) || []
-        this.$set(option, 'availableOptionValues', values)
-        // 为option 对象添加 selectionValues
-        this.$set(
-          option,
-          'selectionValues',
-          option.values.map(value => value.code)
-        )
-      })
-    },
     async getCreationInfo() {
       let {
         data: { brands, categories }
@@ -395,47 +242,30 @@ export default {
       this.brands = brands
       this.categories = categories
     },
+    fetchOptions() {
+      return new Promise(resolve => {
+        resolve(skuTree)
+      })
+    },
+    handleChangeData(data) {
+      console.log(data)
+    },
 
     // 重置表单
     reset() {
       this.$refs[this.formName].resetFields()
       this.resource = _.cloneDeep(this.cloneResource)
-      this.initOptionChecked()
+      // this.initOptionChecked()
     },
     init() {
       this.fillResource()
-      this.initOptionChecked()
+      // this.initOptionChecked()
       this.cloneResource = _.cloneDeep(this.resource)
       this.loaded = true
     }
   },
   computed: {
-    ...mapGetters(['appConfig']),
-    availableOptions() {
-      let category = _.find(this.categories, [
-        'id',
-        _.get(this, 'resource.category.id')
-      ])
-
-      return _.get(category, 'options', []).sort((a, b) => b.sort - a.sort)
-    },
-    optionIsSelected() {
-      return id =>
-        _.get(this, 'cloneResource.selectionOptions', []).includes(id)
-    },
-
-    optionValueIsSelected() {
-      return (optId, code) => {
-        const option = _.find(_.get(this, 'cloneResource.options', []), [
-          this.pk,
-          optId
-        ])
-        if (option) {
-          return option.selectionValues.includes(code)
-        }
-        return false
-      }
-    }
+    ...mapGetters(['appConfig'])
   },
   async created() {
     await this.fetchQiniuToken()

@@ -1,8 +1,9 @@
 <template>
   <div class="flex flex-wrap">
-    <draggable v-model="images" class="flex">
+    <draggable v-model="images" class="flex flex-wrap">
       <div
-        class="w-24 h-24 relative  hover-trigger rounded overflow-hidden mr-2 mb-2"
+        class="w-24 h-24 relative flex items-center justify-center  hover-trigger rounded overflow-hidden"
+        :class="[images.length > 1 ? 'mr-2 mb-2' : '']"
         v-for="file in images"
         :key="file.uid"
       >
@@ -46,6 +47,7 @@
       </div>
     </draggable>
     <el-upload
+      v-show="shouldShowUpload"
       ref="elUpload"
       class="w-24 h-24 rounded overflow-hidden flex items-center justify-center border"
       :on-success="onSuccessHandle"
@@ -55,7 +57,8 @@
       :on-error="onErrorHandle"
       :file-list="images"
       :action="appConfig.qiniu_upload_action"
-      multiple
+      :multiple="multiple"
+      :limit="limit"
     >
       <div class="w-24 h-24 rounded">
         <i
@@ -81,7 +84,7 @@
         </i>
       </div>
     </el-upload>
-    <el-dialog :visible.sync="dialogVisible">
+    <el-dialog append-to-body :visible.sync="dialogVisible">
       <el-image fit="cover" width="100%" :src="dialogImageUrl" lazy></el-image>
     </el-dialog>
   </div>
@@ -100,7 +103,18 @@ export default {
   },
   props: {
     token: String,
-    value: {}
+    value: {},
+    multiple: {
+      type: Boolean,
+      default: true
+    },
+    limit: {
+      type: Number
+    },
+    url: {
+      type: Boolean,
+      default: false
+    }
   },
   model: {
     prop: 'value',
@@ -132,7 +146,6 @@ export default {
       this.dialogVisible = true
     },
     handleDownload(file) {
-      console.log(file)
       let link = document.createElement('a')
       link.href = file.url
       link.style = 'display: none'
@@ -183,9 +196,17 @@ export default {
       this.$emit(
         'input',
         _.isArray(this.value) || _.isNull(this.value)
-          ? this.images
-          : this.images[0]
+          ? this.toChangeValue(this.images)
+          : this.toChangeValue(this.images[0])
       )
+    },
+    toChangeValue(value) {
+      if (this.url) {
+        return _.isArray(value)
+          ? value.map(item => item.url)
+          : _.get(value, 'url')
+      }
+      return value
     },
     resolverValue(value) {
       return {
@@ -198,6 +219,10 @@ export default {
         value = this.value
       }
       // 仅为一个字符串，则视为外链
+      if (value === '') {
+        this.images = []
+        return
+      }
       if (_.isString(value)) {
         this.images = [this.resolverStringValue(value)]
         return
@@ -222,7 +247,13 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['appConfig'])
+    ...mapGetters(['appConfig']),
+    shouldShowUpload() {
+      if (this.limit) {
+        return this.images.length < this.limit
+      }
+      return true
+    }
   },
   async mounted() {
     this.valueInit()

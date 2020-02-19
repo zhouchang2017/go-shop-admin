@@ -13,6 +13,11 @@
       align="left"
     >
     </el-table-column>
+    <el-table-column label="缩略图" prop="thumbnail" align="left">
+      <template slot-scope="{ row }">
+        <status-field :type="row.thumbnail ? 'success' : 'error'" />
+      </template>
+    </el-table-column>
     <el-table-column
       show-overflow-tooltip
       label="权重"

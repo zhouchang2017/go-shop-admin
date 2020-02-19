@@ -1,7 +1,7 @@
 <template>
-  <el-form-item label="属性列表" prop="attributes">
+  <div class="w-full">
     <div
-      class="inline-flex items-center md:border-b-0 border-b"
+      class="inline-flex items-center md:border-b-0 border-b w-full mb-1"
       v-for="(attr, index) in value"
       :key="index"
     >
@@ -24,7 +24,7 @@
     <el-button class="flex mt-3" size="mini" @click="add"
       >添加自定义属性</el-button
     >
-  </el-form-item>
+  </div>
 </template>
 
 <script>

@@ -7,7 +7,12 @@
           v-for="file in value"
           :key="file.uid"
         >
-          <el-image fit="cover" class="h-full" :src="file.url" lazy></el-image>
+          <el-image
+            fit="cover"
+            class="h-full w-full"
+            :src="file.url"
+            lazy
+          ></el-image>
           <div
             class="absolute hover-target w-full h-full top-0 hover-target__actions"
           >

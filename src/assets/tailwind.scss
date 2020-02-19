@@ -153,7 +153,7 @@ $--dialog-box-shadow: theme('boxShadow.lg');
   @apply flex items-center;
 }
 .el-form-item__label {
-  @apply text-gray-600 font-mono;
+  @apply text-gray-600 font-mono whitespace-no-wrap;
 }
 
 .full .el-form-item__content {

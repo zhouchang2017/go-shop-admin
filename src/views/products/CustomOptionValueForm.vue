@@ -24,6 +24,16 @@
           placeholder="属性值"
         ></el-input>
       </el-form-item>
+      <el-form-item v-if="thumbnail" label="缩略图" prop="thumbnail_url">
+        <ImageUpload
+          ref="imageUpload"
+          :multiple="false"
+          :token="token"
+          v-model="customOptionValueForm.thumbnail_url"
+          :limit="1"
+          url
+        />
+      </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
       <el-button size="mini" type="primary" @click="submitValue"
@@ -37,6 +47,10 @@
 export default {
   name: 'CustomOptionValueForm',
 
+  components: {
+    ImageUpload: () => import('@/components/Form/ImageUpload')
+  },
+
   props: {
     visible: {
       type: Boolean
@@ -44,6 +58,9 @@ export default {
     option: {
       type: Object,
       default: () => ({})
+    },
+    token: {
+      type: String
     }
   },
 
@@ -67,7 +84,8 @@ export default {
       customOptionValueForm: {
         code: '',
         option_id: '',
-        value: ''
+        value: '',
+        thumbnail_url: ''
       },
       customOptionValueFormRules: {
         code: [
@@ -119,6 +137,7 @@ export default {
     // 重置添加自定义属性值表单
     resetCustomOptionValueForm() {
       this.$refs['customOptionValueForm'].resetFields()
+      this.customOptionValueForm.thumbnail_url = ''
     }
   },
 
@@ -130,6 +149,9 @@ export default {
       set(value) {
         this.$emit('input', value)
       }
+    },
+    thumbnail() {
+      return _.get(this, 'option.thumbnail', false)
     }
   }
 }
