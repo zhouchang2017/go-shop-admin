@@ -49,7 +49,7 @@
     <el-upload
       v-show="shouldShowUpload"
       ref="elUpload"
-      class="w-24 h-24 rounded overflow-hidden flex items-center justify-center border"
+      class="ml-2 w-24 h-24 rounded overflow-hidden flex items-center justify-center border"
       :on-success="onSuccessHandle"
       :before-upload="onBeforeUploadHandle"
       :data="{ token: token }"
@@ -93,7 +93,6 @@
 <script>
 import { Upload } from 'element-ui'
 import { getQiniuToken } from '@/api/app'
-import { mapGetters } from 'vuex'
 
 // eslint-disable-next-line no-unused-vars
 export default {
@@ -140,6 +139,7 @@ export default {
     handleRemove(file) {
       let index = this.images.findIndex(item => item.uid === file.uid)
       this.images.splice(index, 1)
+      this.$emit('on-delete', { file, index })
     },
     handlePictureCardPreview(file) {
       this.dialogImageUrl = file.url
@@ -181,12 +181,12 @@ export default {
     },
     onSuccessHandle(response, file) {
       setTimeout(() => {
-        const { domain, key } = response
-        file.url = `${domain}/${key}`
+        const { key } = response
+        file.url = `${this.appConfig.qiniu_cdn_domain}/${key}`
 
         this.images.push({
           ...response,
-          url: `${domain}/${key}`,
+          url: file.url,
           status: file.status,
           uid: file.uid
         })
@@ -201,17 +201,13 @@ export default {
       )
     },
     toChangeValue(value) {
-      if (this.url) {
-        return _.isArray(value)
-          ? value.map(item => item.url)
-          : _.get(value, 'url')
-      }
-      return value
+      return _.isArray(value)
+        ? value.map(item => item.url)
+        : _.get(value, 'url')
     },
     resolverValue(value) {
       return {
-        url: `${_.get(value, 'domain')}/${_.get(value, 'key')}`,
-        ...value
+        url: value
       }
     },
     valueInit(value = null) {
@@ -247,7 +243,6 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['appConfig']),
     shouldShowUpload() {
       if (this.limit) {
         return this.images.length < this.limit

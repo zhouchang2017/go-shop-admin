@@ -15,12 +15,18 @@
       :label="optionLabelKey(item)"
       :value="optionValueKey(item)"
     >
-      <div class="flex justify-between">
+      <div class="flex justify-between items-center">
+        <el-image
+          fit="cover"
+          class="h-8 w-8 rounded"
+          :src="getAvatar(item)"
+          lazy
+        ></el-image>
         <p class="text-gray-700">
           {{ item.code }}
         </p>
         <div class=" text-gray-500">
-          {{ item.option_values.map(value => value.value).join('/') }}
+          {{ item.option_values.map(value => value.name).join('/') }}
         </div>
       </div>
     </el-option>
@@ -67,6 +73,9 @@ export default {
     }
   },
   methods: {
+    getAvatar(item) {
+      return _.get(item, 'avatar', _.get(item, 'Meta.avatar'))
+    },
     remoteMethod(query) {
       this.search = query
       this.getResources()

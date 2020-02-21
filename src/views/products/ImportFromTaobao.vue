@@ -75,7 +75,11 @@
           </el-form-item>
 
           <el-form-item label="销售规格" prop="items" class="full">
-            <sku-table :data="resource.options" :items="resource.items" />
+            <sku-table
+              @on-change-data="handleChangeData"
+              :data="resource.options"
+              :items="items"
+            />
           </el-form-item>
 
           <el-form-item label="详情" prop="description" class="full">
@@ -152,7 +156,8 @@ export default {
       },
       loaded: false,
       toQiniu: false,
-      id: null
+      id: null,
+      items: []
     }
   },
   methods: {
@@ -190,7 +195,7 @@ export default {
             this.resource.price = res.data.price
             this.resource.attributes = res.data.attributes
             this.resource.options = res.data.options
-            this.resource.items = res.data.items
+            this.items = res.data.items
             // this.resource.options.
             if (_.get(res, 'data.Meta.images', []).length > 0) {
               this.resource.images = res.data.Meta.images
@@ -200,6 +205,7 @@ export default {
             }
             this.loading = false
           } catch (error) {
+            this.loaded = true
             let message = _.get(error, 'response.data.message')
             if (message !== '') {
               this.$message.error(message)
@@ -220,15 +226,35 @@ export default {
         let res = await axios.post(`/taobao/products/parse-url`, {
           id: this.id,
           images: this.resource.images,
-          description: this.resource.description
+          description: this.resource.description,
+          option_values: this.optionValues
         })
         this.toQiniu = false
         this.resource.images = res.data.images
         this.resource.description = res.data.description
+        let optionValueMap = {}
+        _.get(res, 'data.option_values', []).forEach(value => {
+          if (value.image && value.image != '') {
+            optionValueMap[value.id] = value.image
+          }
+        })
+        this.resource.options.forEach(option => {
+          _.get(option, 'values', []).forEach(value => {
+            console.log(value)
+            console.log(optionValueMap)
+            if (optionValueMap[value.id]) {
+              value.image = optionValueMap[value.id]
+            }
+          })
+        })
+        // this.data
       } catch (error) {
         this.$message.error('转码错误')
         this.toQiniu = false
       }
+    },
+    handleChangeData(data) {
+      this.resource.items = data
     },
     handleDelete(index) {
       this.resource.images.splice(index, 1)
@@ -251,7 +277,7 @@ export default {
         element += '</div>'
         this.$notify({
           title: '填充成功',
-          duration: 0,
+          duration: 2000,
           dangerouslyUseHTMLString: true,
           message: element
         })
@@ -280,6 +306,12 @@ export default {
         return 150
       }
       return window.innerHeight - 200
+    },
+    optionValues() {
+      return _.get(this, 'resource.options', []).reduce((res, option) => {
+        res.push(..._.get(option, 'values', []).filter(value => value.image))
+        return res
+      }, [])
     }
   }
 }

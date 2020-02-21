@@ -148,6 +148,7 @@ export default {
   methods: {
     refresh() {
       this.$nextTick(() => {
+        this.skuTreeData = this.value
         this.$set(this, 'data', this.value)
       })
     },

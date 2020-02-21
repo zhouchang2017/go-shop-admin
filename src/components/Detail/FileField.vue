@@ -37,7 +37,7 @@ export default {
   methods: {
     resolverValue(value) {
       return {
-        url: `${_.get(value, 'domain')}/${_.get(value, 'key')}`,
+        url: value,
         name: _.get(this, 'value.name', '未命名')
       }
     }

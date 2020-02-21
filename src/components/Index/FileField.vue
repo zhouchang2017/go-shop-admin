@@ -16,7 +16,7 @@ export default {
   props: ['resourceName', 'field'],
   methods: {
     resolveValue(item) {
-      return `${_.get(item, 'domain')}/${_.get(item, 'key')}`
+      return item
     }
   },
   computed: {

@@ -1,7 +1,7 @@
 <template>
   <panel-item :field="field">
     <div slot="value">
-      <div class="flex flex-row flex-wrap" v-if="values > 0">
+      <div class="flex flex-row flex-wrap" v-if="values.length > 0">
         <div v-for="(value, index) in values" :key="index">
           <el-tooltip
             v-if="tooltip"

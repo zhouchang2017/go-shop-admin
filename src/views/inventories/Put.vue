@@ -20,6 +20,7 @@
         </el-form-item>
         <el-form-item label="入库商品" prop="items" class="full">
           <div class="w-full sm:flex hidden text-gray-500 font-bold">
+            <div class="mr-3 w-1/5">图片</div>
             <div class="mr-3 w-2/5">货号</div>
             <div class="mr-3 w-1/5">数量</div>
             <div class="w-1/5">状态</div>
@@ -29,6 +30,20 @@
             v-for="(item, index) in resource.items"
             :key="index"
           >
+            <div class="sm:mr-3 sm:w-1/5 flex w-full mb-1 mr-0">
+              <div
+                class="sm:hidden block whitespace-no-wrap text-gray-500 font-bold mr-3"
+              >
+                图片
+              </div>
+              <el-image
+                v-if="item.item"
+                fit="cover"
+                class="h-10 w-10 rounded"
+                :src="getAvatar(item.item)"
+                lazy
+              ></el-image>
+            </div>
             <div class="sm:mr-3 sm:w-2/5 flex w-full mb-1 mr-0">
               <div
                 class="sm:hidden block whitespace-no-wrap text-gray-500 font-bold mr-3"
@@ -173,6 +188,9 @@ export default {
     }
   },
   methods: {
+    getAvatar(item) {
+      return _.get(item, 'avatar', _.get(item, 'Meta.avatar'))
+    },
     async submitViaCreateResource(e) {
       this.submittedViaCreateResource = true
       this.$refs[this.formName].validate(async valid => {

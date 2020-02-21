@@ -135,10 +135,13 @@ export default {
       deep: true,
       immediate: true,
       handler() {
-        this.cacheValuesUid()
-        this.fillItemOptionValuesPid()
-        this.lists = this.skuOf(this.filter)
-        this.computeRowspan()
+        console.log('filter change')
+        this.$nextTick(() => {
+          this.cacheValuesUid()
+          this.fillItemOptionValuesPid()
+          this.lists = this.skuOf(this.filter)
+          this.computeRowspan()
+        })
       }
     },
     lists: {
@@ -226,7 +229,7 @@ export default {
 
           const cached = this.getCache(key, { price: 0, code: '' })
 
-          return Object.assign({}, { option_values: opts }, cached)
+          return Object.assign({}, cached, { option_values: opts })
         }
       )
     },

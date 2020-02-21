@@ -4,7 +4,7 @@
       <draggable v-model="value" class="flex flex-wrap">
         <div
           class="w-24 h-24 relative  hover-trigger rounded overflow-hidden mr-2 mb-2"
-          v-for="file in value"
+          v-for="file in images"
           :key="file.uid"
         >
           <el-image
@@ -134,7 +134,8 @@ export default {
   data: () => ({
     value: [],
     dialogImageUrl: '',
-    dialogVisible: false
+    dialogVisible: false,
+    images: []
   }),
 
   methods: {
@@ -142,11 +143,11 @@ export default {
     setInitialValue() {
       // 仅为一个字符串，则视为外链
       if (_.isString(this.field.value)) {
-        this.value = [this.resolverStringValue(this.field.value)]
+        this.images = [this.resolverStringValue(this.field.value)]
         return
       }
       if (_.isArray(this.field.value)) {
-        this.value = this.field.value.map(item =>
+        this.images = this.field.value.map(item =>
           _.isString(item)
             ? this.resolverStringValue(item)
             : this.resolverValue(item)
@@ -154,9 +155,9 @@ export default {
         return
       }
       if (_.isObject(this.field.value)) {
-        this.value = [this.resolverValue(this.field.value)]
+        this.images = [this.resolverValue(this.field.value)]
       }
-      this.value = []
+      this.images = []
     },
     /**
      * Provide a function that fills a passed FormData object with the
@@ -171,10 +172,7 @@ export default {
     },
 
     resolverValue(value) {
-      if (_.has(value, 'url')) {
-        return value.url
-      }
-      return `${_.get(value, 'domain')}/${_.get(value, 'key')}`
+      return { url: value }
     },
 
     resolverStringValue(value) {
@@ -188,8 +186,8 @@ export default {
       let index = this.uploadFiles.findIndex(item => item.uid === file.uid)
       this.uploadFiles.splice(index, 1)
 
-      index = this.value.findIndex(item => item.url === file.url)
-      this.value.splice(index, 1)
+      index = this.images.findIndex(item => item.url === file.url)
+      this.images.splice(index, 1)
     },
     // 前置删除钩子
     beforeRemove(file, fileList) {
@@ -248,12 +246,11 @@ export default {
     // 上传成功回调函数
     onSuccessHandle(response, file) {
       setTimeout(() => {
-        console.log(file)
-        const { domain, key } = response
-        file.url = `${domain}/${key}`
-        this.value.push({
+        const { key } = response
+        file.url = `${this.appConfig.qiniu_cdn_domain}/${key}`
+        this.images.push({
           ...response,
-          url: `${domain}/${key}`,
+          url: file.url,
           status: file.status,
           uid: file.uid
         })
@@ -328,10 +325,10 @@ export default {
     },
 
     resourceValues() {
-      if (_.get(this, 'field.meta.url')) {
-        return this.value.map(item => this.resolverValue(item))
+      if (_.get(this, 'field.type') === 'image') {
+        return this.images.map(item => item.url)
       }
-      return this.value
+      return this.images
     }
   }
 }

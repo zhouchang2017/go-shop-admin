@@ -114,7 +114,7 @@
           <sku-table
             class="mt-3"
             :data="resource.options"
-            :items="resource.items"
+            :items="items"
             @on-change-data="handleChangeData"
           />
         </el-form-item>
@@ -210,7 +210,8 @@ export default {
       dialogVisible: false,
 
       currentAddCustomOption: {},
-      token: null
+      token: null,
+      items: []
     }
   },
   methods: {
@@ -221,7 +222,8 @@ export default {
         this.resource.price = resource.price
         this.$set(this.resource, 'images', resource.images)
         this.$set(this.resource, 'options', resource.options)
-        this.$set(this.resource, 'items', resource.items)
+        // this.$set(this.resource, 'items', resource.items)
+        this.items = resource.items
         this.resource.description = resource.description
         this.$refs.imageUpload.fill(resource.images)
         this.$refs.skuOptions.refresh()
@@ -248,7 +250,7 @@ export default {
       })
     },
     handleChangeData(data) {
-      console.log(data)
+      this.resource.items = data
     },
 
     // 重置表单
@@ -259,6 +261,7 @@ export default {
     },
     init() {
       this.fillResource()
+      this.items = _.get(this, 'resource.items', [])
       // this.initOptionChecked()
       this.cloneResource = _.cloneDeep(this.resource)
       this.loaded = true

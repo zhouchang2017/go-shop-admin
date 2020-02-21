@@ -58,6 +58,7 @@
                   v-model="value.image"
                   :limit="1"
                   url
+                  :on-delete="handleRemoveImage"
                 />
               </div>
             </div>
@@ -191,6 +192,9 @@ export default {
           this.optionValues = optionValues
         })
       }
+    },
+    handleRemoveImage() {
+      this.onSkuLeafChange(this.sku[this.ease.optionValuesKey])
     },
     handleRemoveSkuLeaf(index) {
       this.sku[this.ease.optionValuesKey].splice(index, 1)
