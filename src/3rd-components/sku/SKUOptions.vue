@@ -1,20 +1,19 @@
 <template>
   <div class="flex flex-col">
     <sku-option
-      v-for="(item, index) in data"
+      v-for="(item, index) in value"
       :key="index"
       :index="index"
       :sku="item"
-      :skuTree="skuTreeData"
       :onOptionChange="rebuildOption"
       :onOptionRemove="handleOptionRemove"
     />
-    <sku-add-option-button v-if="data.length < maxSize" :onClick="addOption" />
+    <sku-add-option-button v-if="value.length < maxSize" :onClick="addOption" />
   </div>
 </template>
 
 <script>
-import { Message } from 'element-ui'
+import { Message, Option } from 'element-ui'
 const noop = res => res
 const noopPromise = () => Promise.resolve(noop)
 export default {
@@ -29,21 +28,43 @@ export default {
   },
   data() {
     return {
-      data: this.value,
-      skuTreeData: this.skuTree
+      options: []
+    }
+  },
+  computed: {
+    availableOptions() {
+      let options = []
+      options.push(...this.options)
+      this.value.forEach(option => {
+        if (!_.has(option, this.optionIdKey)) {
+          options.push(option)
+          return
+        }
+
+        let o = options.find(
+          item => item[this.optionIdKey] === option[this.optionIdKey]
+        )
+        if (o) {
+          o[this.optionNameKey] = option[this.optionNameKey]
+          o[this.optionValuesKey] = option[this.optionValuesKey]
+        } else {
+          options.push(option)
+        }
+      })
+      return options
     }
   },
   watch: {
-    data: {
-      deep: true,
-      immediate: true,
-      handler(value) {
-        this.$emit('input', value)
-      }
-    },
-    skuTree(skuTree) {
-      this.skuTreeData = skuTree
-    }
+    // data: {
+    //   deep: true,
+    //   immediate: true,
+    //   handler(value) {
+    //     this.$emit('input', value)
+    //   }
+    // },
+    // skuTree(skuTree) {
+    //   this.skuTreeData = skuTree
+    // }
   },
   model: {
     prop: 'value',
@@ -66,24 +87,6 @@ export default {
       default() {
         return []
       }
-    },
-    action: {
-      type: String,
-      default: ''
-    },
-    headers: {
-      type: Object,
-      default() {
-        return {}
-      }
-    },
-    accept: {
-      type: String,
-      default: ''
-    },
-    uploadName: {
-      type: String,
-      default: 'resource'
     },
     // 可选规格列表
     skuTree: {
@@ -148,51 +151,65 @@ export default {
   methods: {
     refresh() {
       this.$nextTick(() => {
-        this.skuTreeData = this.value
-        this.$set(this, 'data', this.value)
+        //this.skuTreeData = this.value
+        //this.$set(this, 'data', this.value)
       })
     },
     addOption() {
-      this.data.push({
+      this.value.push({
         [this.optionValuesKey]: []
       })
     },
     rebuildOption(sku, index) {
-      let { skuTreeData, optionIdKey } = this
+      let { optionIdKey } = this
       if (
-        this.data.some(
+        this.value.some(
           (item, idx) => item[optionIdKey] === sku[optionIdKey] && index !== idx
         )
       ) {
         Message.error('规格名不能重复')
         return false
       }
-      this.$set(this.data, index, Object.assign({}, sku))
-      if (!skuTreeData.some(item => item[optionIdKey] === sku[optionIdKey])) {
-        skuTreeData.push(sku)
+      this.$set(this.value, index, Object.assign({}, sku))
+      if (
+        !this.availableOptions.some(
+          item => item[optionIdKey] === sku[optionIdKey]
+        )
+      ) {
+        this.options.push(sku)
       }
-      this.$emit('on-change', this.data)
+      this.$emit('on-change', this.value)
     },
     async handleOptionRemove(index) {
-      let { data } = this
       this.$confirm('是否确定删除?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       })
         .then(() => {
-          data.splice(index, 1)
-          this.$emit('on-change', this.data)
+          this.value.splice(index, 1)
+          this.$emit('on-change', this.value)
         })
         .catch(() => {})
+    },
+    isPromiseLike(p) {
+      if (!p) {
+        return false
+      }
+      const proto = Object.getPrototypeOf
+        ? Object.getPrototypeOf(p)
+        : p.__proto__
+      return typeof proto.then === 'function'
     }
   },
   beforeMount() {
     let { onFetchOptions } = this
     if (typeof onFetchOptions === 'function') {
-      onFetchOptions().then(skuTree => {
-        this.skuTreeData = skuTree
-      })
+      if (this.isPromiseLike(onFetchOptions)) {
+        onFetchOptions().then(options => {
+          this.options = options
+        })
+      }
     }
   }
 }

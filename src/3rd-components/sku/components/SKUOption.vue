@@ -11,7 +11,7 @@
         @change="handleSelectOption"
       >
         <el-option
-          v-for="item in ease.skuTreeData"
+          v-for="item in ease.availableOptions"
           :key="item[optionIdKey]"
           :label="item[optionNameKey]"
           :value="item[optionIdKey]"
@@ -82,14 +82,14 @@ export default {
   methods: {
     filterMethod(keyword) {
       // let { optionNameKey } = this
-      // if (this.ease.skuTreeData.some(item => item[optionNameKey] === keyword)) return
+      // if (this.ease.availableOptions.some(item => item[optionNameKey] === keyword)) return
       // this.newsSkuText = keyword
     },
     // 选择销售属性
     handleSelectOption(value) {
       let { index, optionIdKey } = this
       if (typeof value === 'number') {
-        let sku = this.ease.skuTreeData.find(
+        let sku = this.ease.availableOptions.find(
           item => item[optionIdKey] === value
         )
         sku[this.ease.optionValuesKey] = []

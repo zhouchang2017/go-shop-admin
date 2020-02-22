@@ -6,6 +6,7 @@
           基本
         </div>
         <import-from-taobao
+          v-if="creating"
           class="ml-auto"
           @fill="fillFromTaobao"
           :token="token"
@@ -105,7 +106,6 @@
           <sku-options
             ref="skuOptions"
             v-model="resource.options"
-            :on-fetch-options="fetchOptions"
             :token="token"
           />
         </el-form-item>
@@ -144,17 +144,6 @@ import ResourceForm from '@/mixins/ResourceForm'
 import { mapGetters } from 'vuex'
 
 import { SKUOptions, SKUTable } from '@/3rd-components/sku'
-
-const skuTree = [
-  {
-    uid: 10740,
-    name: '颜色'
-  },
-  {
-    uid: 40732,
-    name: '尺寸'
-  }
-]
 
 export default {
   name: 'post-form',
@@ -226,7 +215,6 @@ export default {
         this.items = resource.items
         this.resource.description = resource.description
         this.$refs.imageUpload.fill(resource.images)
-        this.$refs.skuOptions.refresh()
       })
     },
     // 获取七牛云token
@@ -244,11 +232,7 @@ export default {
       this.brands = brands
       this.categories = categories
     },
-    fetchOptions() {
-      return new Promise(resolve => {
-        resolve(skuTree)
-      })
-    },
+
     handleChangeData(data) {
       this.resource.items = data
     },

@@ -10,7 +10,7 @@
     <el-table-column label="销售属性">
       <template v-for="(label, index) in columns">
         <!-- 为什么要判断label: 动态添加规格名的时候规格名不为undefiend时未动态显示, 没有看table-column实现暂时这么解决  -->
-        <el-table-column v-if="label" :label="label" :key="index">
+        <el-table-column v-if="label" :label="label" :key="index" width="100">
           <template slot-scope="{ row }">
             {{ row.option_values[index] && row.option_values[index].name }}
           </template>
@@ -135,7 +135,6 @@ export default {
       deep: true,
       immediate: true,
       handler() {
-        console.log('filter change')
         this.$nextTick(() => {
           this.cacheValuesUid()
           this.fillItemOptionValuesPid()
