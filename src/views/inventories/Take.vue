@@ -40,6 +40,16 @@
             :data="resource.items"
           >
             <el-table-column type="index"> </el-table-column>
+            <el-table-column label="图片">
+              <template slot-scope="{ row }">
+                <el-image
+                  fit="cover"
+                  class="h-10 w-10 rounded"
+                  :src="getAvatar(row.item)"
+                  lazy
+                ></el-image>
+              </template>
+            </el-table-column>
             <el-table-column
               show-overflow-tooltip
               prop="item.code"
@@ -59,21 +69,7 @@
             />
             <el-table-column label="属性值" align="left">
               <template slot-scope="{ row }">
-                <div class="flex flex-col items-center">
-                  <div v-for="value in row.item.option_values" :key="value.id">
-                    <el-tooltip
-                      class="item"
-                      effect="dark"
-                      :content="value.code"
-                      placement="top"
-                    >
-                      <code
-                        class="markdown block  text-center text-gray-700 p-1 bg-30 hover:bg-gray-300 hover:font-bold  rounded mr-3 text-xs"
-                        >{{ value.value }}</code
-                      >
-                    </el-tooltip>
-                  </div>
-                </div>
+                {{ row.item.option_values.map(value => value.name).join('/') }}
               </template>
             </el-table-column>
             <el-table-column label="库存" prop="max" />
@@ -210,6 +206,9 @@ export default {
   },
 
   methods: {
+    getAvatar(item) {
+      return _.get(item, 'avatar', _.get(item, 'Meta.avatar'))
+    },
     async submitViaCreateResource(e) {
       this.submittedViaCreateResource = true
       this.$refs[this.formName].validate(async valid => {

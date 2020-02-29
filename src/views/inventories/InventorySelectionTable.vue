@@ -8,6 +8,8 @@
         <form-search-input
           placeholder="请输入货号进行搜索"
           v-model.trim="search"
+          @keydown.stop="performSearch"
+          @input="performSearch"
         />
       </div>
       <div class="flex items-center ml-auto pr-3 text-gray-500">
@@ -44,7 +46,22 @@
       :empty-text="emptyText"
     >
       <el-table-column type="selection" width="55" />
-      <el-table-column show-overflow-tooltip label="货号" prop="item.code" />
+      <el-table-column label="图片">
+        <template slot-scope="{ row }">
+          <el-image
+            fit="cover"
+            class="h-10 w-10 rounded"
+            :src="getAvatar(row.item)"
+            lazy
+          ></el-image>
+        </template>
+      </el-table-column>
+      <el-table-column
+        show-overflow-tooltip
+        label="货号"
+        prop="item.code"
+        width="120px"
+      />
       <el-table-column
         show-overflow-tooltip
         label="品牌"
@@ -57,21 +74,7 @@
       />
       <el-table-column label="属性值" align="left">
         <template slot-scope="{ row }">
-          <div class="flex flex-col items-center">
-            <div v-for="value in row.item.option_values" :key="value.id">
-              <el-tooltip
-                class="item"
-                effect="dark"
-                :content="value.code"
-                placement="top"
-              >
-                <code
-                  class="markdown block whitespace-no-wrap text-gray-700 p-1 bg-30 hover:bg-gray-300 hover:font-bold  rounded mr-3 text-xs"
-                  >{{ value.value }}</code
-                >
-              </el-tooltip>
-            </div>
-          </div>
+          {{ row.item.option_values.map(value => value.name).join('/') }}
         </template>
       </el-table-column>
       <el-table-column label="状态">
@@ -178,6 +181,9 @@ export default {
   },
 
   methods: {
+    getAvatar(item) {
+      return _.get(item, 'avatar', _.get(item, 'Meta.avatar'))
+    },
     // 获取资源.
     getResources() {
       this.$nextTick(() => {

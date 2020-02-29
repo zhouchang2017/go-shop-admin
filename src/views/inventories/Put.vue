@@ -99,7 +99,7 @@
               </div>
               <div class="flex sm:ml-3 ml-0 items-center">
                 <button
-                  @click="removeItem(item)"
+                  @click="removeItem(index)"
                   title="删除"
                   type="button"
                   class="text-gray-500 hover:text-blue-500"
@@ -152,6 +152,9 @@ export default {
       }
       if (value.some(item => item.qty <= 0)) {
         return callback(new Error('入库数量必须大于0'))
+      }
+      if (value.some(item => !item.item)) {
+        return callback(new Error('入库商品尚未输入完成'))
       }
       callback()
     }
@@ -230,6 +233,8 @@ export default {
         this.submittedViaCreateResource = true
         this.isWorking = false
 
+        console.log(error)
+
         if (error.response.status == 422) {
           console.log(error.response)
           // this.validationErrors = new Errors(error.response.data.errors)
@@ -305,12 +310,8 @@ export default {
     reset() {
       this.$refs[this.formRef].reset()
     },
-    removeItem(obj) {
-      let index = this.resource.items.findIndex(item => item.id === obj.id)
-      if (index >= 0) {
-        // obj.visible = false
-        this.resource.items.splice(index, 1)
-      }
+    removeItem(index) {
+      this.resource.items.splice(index, 1)
     },
     fill() {
       this.resource.items = this.originalResource.items.map(item => {

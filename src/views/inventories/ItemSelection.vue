@@ -14,18 +14,19 @@
       :key="item[valueKey]"
       :label="optionLabelKey(item)"
       :value="optionValueKey(item)"
+      style="min-width:300px"
     >
-      <div class="flex justify-between items-center">
+      <div class="flex items-center">
         <el-image
           fit="cover"
-          class="h-8 w-8 rounded"
+          class="h-8 w-8 rounded mr-2"
           :src="getAvatar(item)"
           lazy
         ></el-image>
         <p class="text-gray-700">
           {{ item.code }}
         </p>
-        <div class=" text-gray-500">
+        <div class="ml-auto text-gray-500">
           {{ item.option_values.map(value => value.name).join('/') }}
         </div>
       </div>

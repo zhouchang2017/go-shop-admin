@@ -240,8 +240,6 @@ export default {
         })
         this.resource.options.forEach(option => {
           _.get(option, 'values', []).forEach(value => {
-            console.log(value)
-            console.log(optionValueMap)
             if (optionValueMap[value.id]) {
               value.image = optionValueMap[value.id]
             }

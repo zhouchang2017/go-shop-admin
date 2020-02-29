@@ -82,7 +82,6 @@ export default {
   },
 
   mounted() {
-    console.log('resource form mounted')
     this.$nextTick(() => {
       this.loading = true
       this.init()
