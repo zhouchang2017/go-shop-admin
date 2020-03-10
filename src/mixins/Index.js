@@ -324,9 +324,26 @@ export default {
     },
     // 表头
     headings() {
-      return _.isNil(this.viaHeadings)
+      let headings = _.isNil(this.viaHeadings)
         ? _.get(this, '$route.meta.Headings', [])
         : this.viaHeadings
+      return headings.filter(head => !head.expand)
+    },
+    expandHeadIndex() {
+      let headings = _.isNil(this.viaHeadings)
+        ? _.get(this, '$route.meta.Headings', [])
+        : this.viaHeadings
+      return headings.findIndex(
+        head => head.attribute == this.expandHead.attribute
+      )
+    },
+    // expand column
+    expandHead() {
+      let headings = _.isNil(this.viaHeadings)
+        ? _.get(this, '$route.meta.Headings', [])
+        : this.viaHeadings
+      let head = headings.filter(head => head.expand)
+      return head.length > 0 ? head[0] : null
     }
   }
 }

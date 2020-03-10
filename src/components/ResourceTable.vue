@@ -77,6 +77,17 @@
       @select-all="handleSelectionAll"
     >
       <el-table-column v-if="selection" type="selection" width="55" />
+
+      <el-table-column v-if="expandHead" type="expand">
+        <template slot-scope="{ row }">
+          <component
+            :is="resolveComponentName(expandHeadIndex, row.fields)"
+            :field="row.fields[expandHeadIndex]"
+            :resourceName="resourceName"
+          />
+        </template>
+      </el-table-column>
+
       <el-table-column
         v-for="(field, index) in headings"
         :key="field.attribute"

@@ -13,6 +13,7 @@
           >{{ value[label] }}</code
         >
       </el-tooltip>
+
       <code
         v-else
         class="inline-block bg-gray-100 whitespace-no-wrap text-gray-700 px-1 bg-30 hover:bg-white hover:font-bold hover:text-primary rounded mr-3 text-xs"

@@ -140,6 +140,11 @@ $--table-font-color: theme('colors.gray-600');
 $--dialog-box-shadow: theme('boxShadow.lg');
 @import '~element-ui/packages/theme-chalk/src/index';
 
+
+.error .el-input__inner{
+  @apply border-red-600;
+}
+
 .el-menu.el-menu--horizontal{
   @apply border-gray-200;
 }

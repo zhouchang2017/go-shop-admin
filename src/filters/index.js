@@ -8,6 +8,19 @@ const Filters = [
       if (!time) return '-'
       return dayjs(time).format('YYYY-MM-DD HH:mm:ss')
     }
+  },
+  {
+    name: 'money',
+    handler: value => {
+      if (!value) return '-'
+      return Vue.money({
+        amount: value,
+        currency: 'CNY',
+        precision: 2
+      })
+        .setLocale('zh-CN')
+        .toFormat()
+    }
   }
 ]
 
