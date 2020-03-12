@@ -10,139 +10,161 @@
       class="cursor-default"
     >
       <div slot="title" class="flex items-center text-xl font-bold">
-        SKU促销价格设置
+        {{ promotionType === 0 ? 'SKU促销价格设置' : '选择参加促销SKU' }}
       </div>
-      <div class="flex-col">
-        <div class="flex items-center py-1">
-          <div class="whitespace-no-wrap font-mono text-gray-700 mr-1">
-            批量打折
-          </div>
-          <el-input-number
-            v-model="discount"
-            size="mini"
-            :min="1"
-            :max="10"
-            :precision="2"
-            :step="0.1"
-            controls-position="right"
-            class="mr-1"
-          ></el-input-number>
-
-          <!-- <el-input v-model="discount" size="mini" class="mr-1" /> -->
-          <el-button type="primary" @click="fillDiscount" size="mini"
-            >确认</el-button
-          >
-        </div>
-
-        <div class="flex items-center py-1 max-w-xs">
-          <div class="whitespace-no-wrap mr-1 font-mono text-gray-700">
-            批量减价
-          </div>
-          <form-currency
-            v-model="preferentialPrice"
-            class="mr-1"
-            :extraProps="{
-              size: 'mini'
-            }"
-          />
-          <el-button type="primary" @click="fillPreferentialPrice" size="mini"
-            >确认</el-button
-          >
-        </div>
-        <div class="flex items-center py-1 max-w-xs">
-          <div class="whitespace-no-wrap mr-1 font-mono text-gray-700">
-            批量填充
-          </div>
-          <form-currency
-            class="mr-1"
-            v-model="price"
-            :extraProps="{
-              size: 'mini'
-            }"
-          />
-          <el-button type="primary" @click="fillPrice" size="mini"
-            >确认</el-button
-          >
-        </div>
-        <div class="flex items-center py-1">
-          <el-button-group>
-            <el-button @click="fillRoundedUnit(2)" size="mini">抹角</el-button>
-            <el-button @click="fillRoundedUnit(1)" size="mini">抹分</el-button>
-          </el-button-group>
-        </div>
-      </div>
-
-      <div class="flex items-center">
-        <el-table
-          :data="data"
-          :ref="tableName"
-          @select="handleSelection"
-          @select-all="handleSelectionAll"
-          class="rounded-lg overflow-hidden"
-          fit
-          highlight-current-row
-          style="width: 100%;"
-          :max-height="maxHeight"
+      <div v-loading="loading">
+        <el-alert
+          v-if="promotionType === 1"
+          class="mb-3"
+          title="一个都不选择的话，则视为全部参加"
+          type="info"
+          :closable="false"
         >
-          <el-table-column type="selection" width="55" />
-          <el-table-column label="缩略图" prop="avatar">
-            <template slot-scope="{ row }">
-              <el-image
-                class="h-8 w-8 rounded"
-                fit="cover"
-                width="100%"
-                :src="row.item.avatar"
-                lazy
-              />
-            </template>
-          </el-table-column>
-          <el-table-column
-            show-overflow-tooltip
-            prop="item.code"
-            min-width="150"
-            label="货号"
+        </el-alert>
+        <div class="flex-col" v-if="promotionType === 0">
+          <div class="flex items-center py-1">
+            <div class="whitespace-no-wrap font-mono text-gray-700 mr-1">
+              批量打折
+            </div>
+            <el-input-number
+              v-model="discount"
+              size="mini"
+              :min="1"
+              :max="10"
+              :precision="2"
+              :step="0.1"
+              controls-position="right"
+              class="mr-1"
+            ></el-input-number>
+
+            <!-- <el-input v-model="discount" size="mini" class="mr-1" /> -->
+            <el-button type="primary" @click="fillDiscount" size="mini"
+              >确认</el-button
+            >
+          </div>
+
+          <div class="flex items-center py-1 max-w-xs">
+            <div class="whitespace-no-wrap mr-1 font-mono text-gray-700">
+              批量减价
+            </div>
+            <form-currency
+              v-model="preferentialPrice"
+              class="mr-1"
+              :extraProps="{
+                size: 'mini'
+              }"
+            />
+            <el-button type="primary" @click="fillPreferentialPrice" size="mini"
+              >确认</el-button
+            >
+          </div>
+          <div class="flex items-center py-1 max-w-xs">
+            <div class="whitespace-no-wrap mr-1 font-mono text-gray-700">
+              批量填充
+            </div>
+            <form-currency
+              class="mr-1"
+              v-model="price"
+              :extraProps="{
+                size: 'mini'
+              }"
+            />
+            <el-button type="primary" @click="fillPrice" size="mini"
+              >确认</el-button
+            >
+          </div>
+          <div class="flex items-center py-1">
+            <el-button-group>
+              <el-button @click="fillRoundedUnit(2)" size="mini"
+                >抹角</el-button
+              >
+              <el-button @click="fillRoundedUnit(1)" size="mini"
+                >抹分</el-button
+              >
+            </el-button-group>
+          </div>
+        </div>
+
+        <div class="flex items-center">
+          <el-table
+            :data="data"
+            :ref="tableName"
+            @select="handleSelection"
+            @select-all="handleSelectionAll"
+            class="rounded-lg overflow-hidden"
+            fit
+            highlight-current-row
+            style="width: 100%;"
+            :max-height="maxHeight"
           >
-          </el-table-column>
-          <el-table-column
-            show-overflow-tooltip
-            label="属性值"
-            align="left"
-            min-width="150"
-          >
-            <template slot-scope="{ row }">
-              {{ row.item.option_values.map(value => value.name).join('/') }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            show-overflow-tooltip
-            prop="price"
-            min-width="100"
-            label="吊牌价"
-          >
-            <template slot-scope="{ row }">{{
-              row.item.price | money
-            }}</template>
-          </el-table-column>
-          <el-table-column min-width="150" label="促销价">
-            <template slot-scope="{ row }">
-              <form-currency
-                :extraClass="
-                  `outline-none
+            <el-table-column type="selection" width="55" />
+            <el-table-column label="缩略图" prop="avatar">
+              <template slot-scope="{ row }">
+                <el-image
+                  class="h-8 w-8 rounded"
+                  fit="cover"
+                  width="100%"
+                  :src="row.item.avatar"
+                  lazy
+                />
+              </template>
+            </el-table-column>
+            <el-table-column
+              show-overflow-tooltip
+              prop="item.code"
+              min-width="150"
+              label="货号"
+            >
+            </el-table-column>
+            <el-table-column
+              show-overflow-tooltip
+              label="属性值"
+              align="left"
+              min-width="150"
+            >
+              <template slot-scope="{ row }">
+                {{ row.item.option_values.map(value => value.name).join('/') }}
+              </template>
+            </el-table-column>
+            <el-table-column
+              show-overflow-tooltip
+              prop="price"
+              min-width="100"
+              label="吊牌价"
+            >
+              <template slot-scope="{ row }">{{
+                row.origin_price | money
+              }}</template>
+            </el-table-column>
+            <el-table-column
+              v-if="promotionType === 0"
+              min-width="150"
+              label="促销价"
+            >
+              <template slot-scope="{ row }">
+                <form-currency
+                  :extraClass="
+                    `outline-none
           focus:outline-none w-full rounded ${row.error ? 'error' : ''}`
-                "
-                v-model.number="row.price"
-                :extraProps="{
-                  size: 'mini',
-                  disabled: !row.checked
-                }"
-              />
-            </template>
-          </el-table-column>
-        </el-table>
+                  "
+                  v-model.number="row.price"
+                  :extraProps="{
+                    size: 'mini',
+                    disabled: !row.checked
+                  }"
+                />
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
       </div>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="submit">确 定</el-button>
+        <el-button :disabled="loading" @click="dialogVisible = false"
+          >取 消</el-button
+        >
+        <el-button :disabled="loading" type="primary" @click="submit"
+          >确 定</el-button
+        >
       </span>
     </el-dialog>
     <button
@@ -177,17 +199,19 @@ export default {
       price: 0,
       preferentialPrice: 0,
       discount: 8,
-      data: []
+      data: [],
+      loading: false
     }
   },
   async mounted() {
-    // await this.fetchProduct()
+    // await this.fetchItems()
     // this.valueInit()
     // this.toggleSelection()
   },
   watch: {
-    dialogVisible(value) {
+    async dialogVisible(value) {
       if (value) {
+        await this.itemsInit()
         this.valueInit()
         this.toggleSelection()
       }
@@ -206,12 +230,10 @@ export default {
       try {
         let res = await this.validateForm()
         this.$emit('submit', res)
+        this.dialogVisible = false
       } catch (error) {
         this.$message.error(error.message)
       }
-
-      // this.$emit('submit',this.data.map(item=>{
-      // }))
     },
     validateForm() {
       return new Promise((resolve, reject) => {
@@ -225,6 +247,10 @@ export default {
                   if (_.has(item, 'price')) {
                     res.price = item.price
                   }
+                  if (_.has(item, 'origin_price')) {
+                    res.origin_price = item.origin_price
+                  }
+                  res.item = item.item
                   res.item_id = item.item_id
                 })
               })
@@ -248,6 +274,7 @@ export default {
           res.push({
             item_id: item.id,
             price: item.price,
+            origin_price: item.price,
             checked: false,
             item: item,
             error: false
@@ -256,11 +283,21 @@ export default {
         return res
       }, [])
     },
-    async fetchProduct() {
-      let { data } = await axios.get(
-        `/api/items?page=-1&filters=${this.filterParams}`
-      )
-      console.log(data)
+    async itemsInit() {
+      if (!_.has(this.value, 'product.items')) {
+        try {
+          this.loading = true
+          let { data } = await this.fetchItems()
+          this.value.product.items = data.data
+          this.loading = false
+        } catch (error) {
+          this.loading = false
+          console.error(error)
+        }
+      }
+    },
+    fetchItems() {
+      return axios.get(`/api/items?page=-1&filters=${this.filterParams}`)
     },
     // 批量设置价格
     fillPrice() {
@@ -274,7 +311,7 @@ export default {
     fillDiscount() {
       this.data.forEach(item => {
         if (item.checked) {
-          item.price = (item.item.price * this.discount) / 10
+          item.price = (item.origin_price * this.discount) / 10
         }
       })
     },
@@ -282,7 +319,7 @@ export default {
     fillPreferentialPrice() {
       this.data.forEach(item => {
         if (item.checked) {
-          item.price = item.item.price - this.preferentialPrice
+          item.price = item.origin_price - this.preferentialPrice
         }
       })
     },
@@ -353,6 +390,9 @@ export default {
       return btoa(
         encodeURIComponent(JSON.stringify({ 'product.id': this.productId }))
       )
+    },
+    promotionType() {
+      return this.promotion.resource.type
     }
   }
 }

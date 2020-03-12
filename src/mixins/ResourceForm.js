@@ -30,9 +30,12 @@ export default {
     submit() {
       return new Promise((resolve, reject) => {
         this.$refs[this.formName].validate((valid, err) => {
-          valid
-            ? resolve(this.resourceTransform())
-            : this.notifyErrorMessage(err)
+          if (valid) {
+            return resolve(this.resourceTransform())
+          } else {
+            this.notifyErrorMessage(err)
+            return reject(err)
+          }
         })
       })
     },

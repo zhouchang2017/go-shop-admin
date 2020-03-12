@@ -15,7 +15,7 @@
           </div>
         </el-form-item>
         <el-form-item label="活动类型" prop="type">
-          <el-radio-group v-model="resource.type">
+          <el-radio-group :disabled="updating" v-model="resource.type">
             <el-radio :label="0">单品活动</el-radio>
             <el-radio :label="1">复合活动</el-radio>
           </el-radio-group>
@@ -28,11 +28,8 @@
             placeholder="请输入活动描述"
           ></el-input>
         </el-form-item>
-        <el-form-item label="是否互斥" prop="mutex">
+        <el-form-item v-if="resource.type === 1" label="是否互斥" prop="mutex">
           <el-switch v-model="resource.mutex"> </el-switch>
-          <div class="text-gray-500 text-xs">
-            单品活动无视互斥，只要活动开启，优惠就生效
-          </div>
         </el-form-item>
 
         <div
@@ -112,7 +109,13 @@
           </div>
         </div>
 
-        <el-form-item label="活动时间">
+        <el-form-item
+          label="活动时间"
+          prop="begin_at"
+          :rules="[
+            { required: true, message: '请选择活动时间', trigger: 'blur' }
+          ]"
+        >
           <el-date-picker
             v-model="rangeTime"
             type="datetimerange"
@@ -137,7 +140,7 @@
           prop="items"
           class="full"
         >
-          <div>
+          <div v-if="resource.type === 0">
             <div class="flex items-center py-1">
               <div class="whitespace-no-wrap font-mono text-gray-700 mr-1">
                 批量打折
@@ -157,7 +160,7 @@
               <el-button type="primary" @click="fillDiscount" size="mini"
                 >确认</el-button
               >
-              <div class="flex items-center py-1">
+              <div class="flex items-center ml-3">
                 <el-button-group>
                   <el-button @click="fillRoundedUnit(2)" size="mini"
                     >抹角</el-button
@@ -202,6 +205,17 @@
             >
               <template slot-scope="{ row }">{{
                 row.product.price | money
+              }}</template>
+            </el-table-column>
+
+            <el-table-column
+              v-if="resource.type === 0"
+              show-overflow-tooltip
+              min-width="150"
+              label="促销价"
+            >
+              <template slot-scope="{ row }">{{
+                productDiscountPrice(row.units)
               }}</template>
             </el-table-column>
 
@@ -308,21 +322,18 @@ export default {
         items: []
       },
       rules: {
-        name: [{ required: true, message: '请输入产品名称', trigger: 'blur' }],
-        code: [{ required: true, message: '请输入产品编码', trigger: 'blur' }],
-        category: [
-          { required: true, message: '请选择产品类别', trigger: 'change' }
+        name: [
+          { required: true, message: '请输入促销计划名称', trigger: 'blur' }
         ],
-        selectionOptions: [
+        items: [
           {
             type: 'array',
             min: 1,
             required: true,
-            message: '请选择产品销售属性',
+            message: '请选择参加促销商品',
             trigger: 'change'
           }
-        ],
-        price: [{ required: true, message: '请输入产品价格', trigger: 'blur' }]
+        ]
       },
       discount: 8
     }
@@ -334,9 +345,29 @@ export default {
       this.resource = _.cloneDeep(this.cloneResource)
       // this.initOptionChecked()
     },
-    async ctestProductApi() {
-      let { data } = await axios.get('/promotions/5e621c70ed02ced785f1d257/api')
-      console.log(data)
+    resourceTransform() {
+      let resource = _.cloneDeep(this.resource)
+      resource.items = resource.items.map(item => {
+        let obj = {
+          product_id: item.product_id,
+          units: item.units.map(unit => {
+            return this.resource.type === 0
+              ? {
+                  item_id: unit.item_id,
+                  origin_price: unit.origin_price,
+                  price: unit.price
+                }
+              : {
+                  item_id: unit.item_id
+                }
+          })
+        }
+        if (_.has(item, 'id')) {
+          obj.id = item.id
+        }
+        return obj
+      })
+      return resource
     },
     formatTooltip(value) {
       return `${value}%`
@@ -353,15 +384,18 @@ export default {
     },
     onChange({ checked, obj }) {
       if (checked) {
+        console.log(obj)
         let productId = obj.id
 
         let units = []
         if (this.isUnitSale) {
+          // 单品促销，默认添加所有sku
           if (obj.items && obj.items.length) {
             obj.items.forEach(item => {
               units.push({
                 item_id: item.id,
                 item: item,
+                origin_price: item.price,
                 price: item.price
               })
             })
@@ -379,29 +413,66 @@ export default {
           item => item.product_id === obj.id
         )
         if (index >= 0) {
-          this.items.splice(index, 1)
+          this.resource.items.splice(index, 1)
         }
       }
     },
-    onSkuEditSubmit(units, row) {},
+    toCurrency(value) {
+      return this.$money({
+        amount: value,
+        currency: 'CNY',
+        precision: 2
+      })
+        .setLocale('zh-CN')
+        .toFormat()
+    },
+    // 产品折后价
+    productDiscountPrice(units) {
+      let prices = units.map(units => units.price)
+
+      let min = _.min(prices)
+      let max = _.max(prices)
+      if (min === max) {
+        return this.toCurrency(min)
+      } else {
+        return `${this.toCurrency(min)}-${this.toCurrency(max)}`
+      }
+    },
+    onSkuEditSubmit(units, row) {
+      // console.log(units)
+      // let checkedItemIdsMap = units.reduce((map, value) => {
+      //   map[value.item_id] = value
+      //   return map
+      // }, {})
+      // console.log(checkedItemIdsMap)
+      // let updatedUnits = row.units.reduce((units, unit) => {
+      //   if (checkedItemIdsMap[unit.item_id]) {
+      //     let updateUnit = checkedItemIdsMap[unit.item_id]
+      //     if (_.has(updateUnit, 'price')) {
+      //       unit.price = updateUnit.price
+      //     }
+      //     units.push(unit)
+      //   }
+      //   return units
+      // }, [])
+      // console.log(updatedUnits)
+      this.$set(row, 'units', units)
+    },
     // 批量折扣
     fillDiscount() {
-      this.data.forEach(item => {
-        if (item.checked) {
-          item.price = (item.item.price * this.discount) / 10
-        }
+      this.resource.items.forEach(item => {
+        item.units.forEach(unit => {
+          unit.price = (unit.origin_price * this.discount) / 10
+        })
       })
     },
     // 抹角/抹分
     fillRoundedUnit(num) {
-      this.data.forEach(item => {
-        if (item.checked) {
-          if (item.price) {
-            let unit = Math.pow(10, num)
-
-            item.price = Math.ceil(item.price / unit) * unit
-          }
-        }
+      this.resource.items.forEach(item => {
+        item.units.forEach(unit => {
+          unit.price =
+            Math.ceil(unit.price / Math.pow(10, num)) * Math.pow(10, num)
+        })
       })
     }
   },
@@ -433,9 +504,6 @@ export default {
     countSelectionItem() {
       return _.get(this, 'resource.items', []).length
     }
-  },
-  async created() {
-    await this.ctestProductApi()
   }
 }
 </script>

@@ -7,19 +7,15 @@
     </div>
 
     <post-form :ref="formRef" :value.sync="resource" />
-    <div class="mb-6"></div>
-
-    <div class="fixed bottom-0 left-0 w-full sm:pl-64">
-      <div class="flex w-full bg-white p-3">
-        <div class="ml-auto"></div>
-        <el-button @click="reset">Reset</el-button>
-        <el-button
-          @click="submitViaCreateResource"
-          :loading="isWorking"
-          type="primary"
-          >Create</el-button
-        >
-      </div>
+    <div class="flex w-full">
+      <div class="ml-auto"></div>
+      <el-button @click="reset">Reset</el-button>
+      <el-button
+        @click="submitViaCreateResource"
+        :loading="isWorking"
+        type="primary"
+        >Create</el-button
+      >
     </div>
   </div>
 </template>
@@ -57,8 +53,9 @@ export default {
 
     async createResource() {
       this.isWorking = true
-      const formData = await this.$refs[this.formRef].submit()
       try {
+        const formData = await this.$refs[this.formRef].submit()
+
         const {
           data: { redirect }
         } = await this.createRequest(formData)
@@ -72,8 +69,7 @@ export default {
       } catch (error) {
         this.isWorking = false
 
-        if (error.response.status == 422) {
-          console.log(error.response)
+        if (_.get(error, 'response.status') == 422) {
           // this.validationErrors = new Errors(error.response.data.errors)
           this.$message({
             message: 'There was a problem submitting the form.',
