@@ -23,6 +23,23 @@
       @ready="onEditorReady($event)"
     >
     </quill-editor>
+
+    <el-dialog
+      :visible.sync="show"
+      width="80%"
+      class="cursor-default min-h-500"
+    >
+      <div slot="title" class="flex items-center text-xl font-bold">
+        Html编辑
+      </div>
+      <el-input
+        type="textarea"
+        autosize
+        :placeholder="editorOption.placeholder"
+        v-model="value"
+      >
+      </el-input>
+    </el-dialog>
   </div>
 </template>
 
@@ -51,7 +68,7 @@ const toolbarOptions = [
   [{ color: [] }, { background: [] }],
   [{ align: [] }],
   ['clean'],
-  ['link', 'image', 'video']
+  ['link', 'image', 'video', 'origin-html']
 ]
 
 export default {
@@ -66,6 +83,7 @@ export default {
   data() {
     let that = this
     return {
+      show: false,
       editorOption: {
         placeholder: '请输入文本...',
         modules: {
@@ -80,6 +98,9 @@ export default {
                   this.quill.format('image', false)
                   that.$message.error('尚未配置七牛云存储')
                 }
+              },
+              'origin-html': function(value) {
+                that.show = true
               }
             }
           }
@@ -148,6 +169,13 @@ export default {
 }
 .ql-snow .ql-tooltip[data-mode='link']::before {
   content: '请输入链接地址:';
+}
+.ql-origin-html::before {
+  color: #999;
+  font-weight: 700;
+  font-size: 10px;
+  display: flex;
+  content: '</>';
 }
 .ql-snow .ql-tooltip.ql-editing a.ql-action::after {
   border-right: 0px;

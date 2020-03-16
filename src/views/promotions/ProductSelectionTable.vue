@@ -23,7 +23,7 @@
       @select="handleSelection"
       @select-all="handleSelectionAll"
     >
-      <el-table-column type="selection" width="55" />
+      <el-table-column :selectable="selectable" type="selection" width="55" />
       <el-table-column label="缩略图" prop="images">
         <template slot-scope="{ row }">
           <el-image
@@ -68,6 +68,7 @@ import StandardFilterable from '@/mixins/StandardFilterable'
 export default {
   name: 'ProductSelectionTable',
   mixins: [Index, StandardFilterable],
+  inject: ['promotion'],
   props: {
     items: {
       type: Array,
@@ -98,6 +99,17 @@ export default {
     },
     items: function() {
       this.toggleSelection()
+    },
+    promotionType: function(value) {
+      if (value === 0) {
+        // 尝试移除已加入活动产品
+        // 清空
+        this.resources.forEach(item => {
+          if (item.price !== item.promotion_price) {
+            this.$emit('change', { checked: false, obj: item })
+          }
+        })
+      }
     }
   },
   async created() {
@@ -131,6 +143,12 @@ export default {
   },
 
   methods: {
+    selectable(row, index) {
+      if (this.promotionType === 1) {
+        return true
+      }
+      return row.price === row.promotion_price
+    },
     handleSelection(selections, row) {
       let product = selections.find(product => product.id === row.id)
       const checked = !_.isNil(product)
@@ -171,6 +189,9 @@ export default {
     // 资源api
     resourcesEndpoint() {
       return '/api/products'
+    },
+    promotionType() {
+      return this.promotion.resource.type
     }
   }
 }

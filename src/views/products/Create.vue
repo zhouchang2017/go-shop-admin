@@ -53,8 +53,9 @@ export default {
 
     async createResource() {
       this.isWorking = true
-      const formData = await this.$refs[this.formRef].submit()
       try {
+        const formData = await this.$refs[this.formRef].submit()
+
         const {
           data: { redirect }
         } = await this.createRequest(formData)
@@ -68,7 +69,7 @@ export default {
       } catch (error) {
         this.isWorking = false
 
-        if (error.response.status == 422) {
+        if (_.get(error, 'response.status') == 422) {
           console.log(error.response)
           // this.validationErrors = new Errors(error.response.data.errors)
           this.$message({

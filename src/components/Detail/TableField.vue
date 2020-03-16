@@ -11,8 +11,9 @@
       v-for="(item, index) in headings"
       :label="item.name"
       :prop="item.attribute"
-      align="left"
+      :align="index === 0 ? 'left' : 'right'"
       :key="index"
+      v-bind="item.meta"
     >
       <template slot-scope="{ row }">
         <component

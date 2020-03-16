@@ -1,79 +1,122 @@
 <template>
-  <el-table
-    border
-    class="rounded overflow-hidden"
-    size="mini"
-    :data="lists"
-    v-if="lists.length && columns.length > 0"
-    :span-method="handleSpanMethod"
-  >
-    <el-table-column label="销售属性">
-      <template v-for="(label, index) in columns">
-        <!-- 为什么要判断label: 动态添加规格名的时候规格名不为undefiend时未动态显示, 没有看table-column实现暂时这么解决  -->
-        <el-table-column v-if="label" :label="label" :key="index" width="100">
+  <div v-if="lists.length && columns.length > 0">
+    <div v-if="editable" class="flex-row">
+      <div class="flex items-center max-w-xs">
+        <div
+          class="whitespace-no-wrap text-sm  font-medium  text-gray-500 mr-1"
+        >
+          填充货号前缀
+        </div>
+        <el-input
+          class="outline-none focus:outline-none w-full rounded mr-1"
+          v-model="code"
+          size="mini"
+        />
+
+        <el-button type="primary" @click="fillCode" size="mini">确认</el-button>
+      </div>
+      <div class="flex items-center max-w-xs">
+        <div
+          class="whitespace-no-wrap text-sm  font-medium  text-gray-500 mr-1"
+        >
+          批量填充价格
+        </div>
+        <form-currency
+          extraClass="outline-none
+  focus:outline-none w-full rounded"
+          v-model="price"
+          :extraProps="{
+            size: 'mini'
+          }"
+          class="mr-1"
+        />
+
+        <el-button type="primary" @click="fillPrice" size="mini"
+          >确认</el-button
+        >
+      </div>
+      <div class="flex items-center max-w-xs">
+        <div
+          class="whitespace-no-wrap text-sm  font-medium  text-gray-500 mr-1"
+        >
+          批量填充库存
+        </div>
+        <el-input
+          type="number"
+          class="outline-none focus:outline-none w-full rounded mr-1"
+          v-model.number="qty"
+          size="mini"
+        />
+
+        <el-button type="primary" @click="fillQty" size="mini">确认</el-button>
+      </div>
+    </div>
+    <el-table
+      border
+      class="rounded overflow-hidden"
+      size="mini"
+      :data="lists"
+      :span-method="handleSpanMethod"
+    >
+      <el-table-column label="销售属性">
+        <template v-for="(label, index) in columns">
+          <!-- 为什么要判断label: 动态添加规格名的时候规格名不为undefiend时未动态显示, 没有看table-column实现暂时这么解决  -->
+          <el-table-column v-if="label" :label="label" :key="index" width="100">
+            <template slot-scope="{ row }">
+              {{ row.option_values[index] && row.option_values[index].name }}
+            </template>
+          </el-table-column>
+        </template>
+      </el-table-column>
+      <el-table-column label="基本信息">
+        <el-table-column prop="code" label="货号" min-width="150">
           <template slot-scope="{ row }">
-            {{ row.option_values[index] && row.option_values[index].name }}
+            <el-input
+              @change="value => inputHandle(row)"
+              v-if="editable"
+              type="text"
+              class="outline-none focus:outline-none w-full m-1 p-1 rounded"
+              v-model="row.code"
+              size="mini"
+            />
+            <span v-else>{{ row.code }}</span>
           </template>
         </el-table-column>
-      </template>
-    </el-table-column>
-    <el-table-column label="基本信息">
-      <el-table-column prop="code" label="货号">
-        <template slot-scope="{ row }">
-          <el-input
-            @change="value => inputHandle(row)"
-            v-if="editable"
-            type="text"
-            class="outline-none focus:outline-none w-full m-1 p-1 rounded"
-            v-model="row.code"
-            size="mini"
-          />
-          <span v-else>{{ row.code }}</span>
-        </template>
-      </el-table-column>
 
-      <el-table-column prop="price" label="价格">
-        <template slot="header">
-          价格
-          <el-popover placement="bottom" trigger="click">
-            <div>
-              <div class="text-gray-700 mb-3">批量填充价格</div>
-              <div class="flex flex-col">
-                <form-currency
-                  extraClass="outline-none
+        <el-table-column prop="price" label="价格" min-width="100">
+          <template slot-scope="{ row }">
+            <form-currency
+              extraClass="outline-none
           focus:outline-none w-full rounded"
-                  v-model="price"
-                  :extraProps="{
-                    size: 'mini'
-                  }"
-                  class="mb-1"
-                />
-                <el-button @click="fillPrice" size="mini">填充</el-button>
-              </div>
-            </div>
-            <icons-icon
-              slot="reference"
-              type="icons-edit"
-              class="inline-flex ml-3 appearance-none cursor-pointer text-gray-500 hover:text-blue-500"
+              v-model.number="row.price"
+              v-if="editable"
+              @change="v => inputHandle(row)"
+              :extraProps="{
+                size: 'mini'
+              }"
             />
-          </el-popover>
-        </template>
-        <template slot-scope="{ row }">
-          <form-currency
-            extraClass="outline-none
-          focus:outline-none w-full rounded"
-            v-model.number="row.price"
-            v-if="editable"
-            @change="v => inputHandle(row)"
-            :extraProps="{
-              size: 'mini'
-            }"
-          />
-          <span v-else>{{ row.price }}</span>
-        </template>
+            <span v-else>{{ row.price }}</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column prop="qty" label="库存" min-width="80">
+          <template slot-scope="{ row }">
+            <el-input
+              @change="value => inputHandle(row)"
+              v-if="editable"
+              type="number"
+              class="outline-none focus:outline-none w-full m-1 p-1 rounded"
+              v-model.number="row.qty"
+              size="mini"
+            />
+            <span v-else>{{ row.qty }}</span>
+          </template>
+        </el-table-column>
       </el-table-column>
-    </el-table-column>
-  </el-table>
+    </el-table>
+  </div>
+  <el-alert v-else title="请先完善销售属性" type="info" :closable="false">
+  </el-alert>
 </template>
 
 <script>
@@ -117,7 +160,9 @@ export default {
       lists: [],
       cachedData: {},
       price: 0,
-      valuesUidMap: {}
+      qty: 0,
+      valuesUidMap: {},
+      code: ''
     }
   },
   computed: {
@@ -177,10 +222,28 @@ export default {
         this.setCache(key, item)
       })
     },
+    fillCode() {
+      this.lists.forEach(item => {
+        let code = item.code.replace(this.code, '')
+        item.code = `${this.code}${code}`
+        const key = this.getCacheKey(item.option_values)
+        this.setCache(key, item)
+      })
+    },
     // 填充价格
     fillPrice() {
       this.lists.forEach(item => {
         item.price = this.price
+        const key = this.getCacheKey(item.option_values)
+        this.setCache(key, item)
+      })
+    },
+    // 填充库存
+    fillQty() {
+      this.lists.forEach(item => {
+        item.qty = this.qty
+        const key = this.getCacheKey(item.option_values)
+        this.setCache(key, item)
       })
     },
     // 价格货号输入事件监听
@@ -226,7 +289,7 @@ export default {
           // 计算key
           const key = this.getCacheKey(opts)
 
-          const cached = this.getCache(key, { price: 0, code: '' })
+          const cached = this.getCache(key, { price: 0, code: '', qty: 0 })
 
           return Object.assign({}, cached, { option_values: opts })
         }

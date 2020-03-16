@@ -19,6 +19,9 @@
             <el-radio :label="0">单品活动</el-radio>
             <el-radio :label="1">复合活动</el-radio>
           </el-radio-group>
+          <div class="text-gray-500 text-xs">
+            同一件商品只能参加一个单品活动，如该商品以参加单品活动，则不可勾选
+          </div>
         </el-form-item>
         <el-form-item label="活动描述" prop="description">
           <el-input
@@ -305,7 +308,7 @@ export default {
     return {
       extendRequestQueryParams: {
         with: 'item',
-        hidden: 'attributes,options,description,sort'
+        hidden: 'attributes,options,description,sort,images'
       },
       loaded: false,
       resource: {
@@ -428,8 +431,10 @@ export default {
     },
     // 产品折后价
     productDiscountPrice(units) {
+      if (units.length === 0) {
+        return '-'
+      }
       let prices = units.map(units => units.price)
-
       let min = _.min(prices)
       let max = _.max(prices)
       if (min === max) {
