@@ -93,6 +93,7 @@
         :key="field.attribute"
         :label="field.name"
         show-overflow-tooltip
+        v-bind="field.meta"
       >
         <template slot-scope="{ row }">
           <component

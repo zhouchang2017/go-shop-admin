@@ -371,7 +371,7 @@ export default {
           panels[field.panel] = this.createPanelForField(field)
         })
 
-        return _.toArray(panels)
+        return _.toArray(panels).sort((a, b) => b.sort - a.sort)
       }
       return []
     }
