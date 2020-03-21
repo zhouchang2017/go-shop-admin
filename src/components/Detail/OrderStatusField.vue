@@ -19,7 +19,9 @@
         }}后自动关闭
       </div>
       <div class="ml-auto">
-        <el-button type="info" size="mini">关闭订单</el-button>
+        <el-button type="info" @click="onCancel" size="mini"
+          >关闭订单</el-button
+        >
       </div>
     </div>
 
@@ -33,7 +35,9 @@
         {{ buyer }}在{{ paymentAt | timeStr }}完成订单支付，请尽快安排发货
       </div>
       <div class="ml-auto">
-        <el-button type="primary" size="mini">发货</el-button>
+        <el-button @click="toShipment" type="primary" size="mini"
+          >发货</el-button
+        >
       </div>
     </div>
 
@@ -43,11 +47,13 @@
       class="flex flex-col bg-gray-200 rounded p-3 text-gray-700 mt-3"
     >
       <p class="font-bold">当前订单状态：已发货，等待买家收货</p>
-      <div class="mt-3 text-sm">
+      <!-- <div class="mt-3 text-sm">
         {{ buyer }}在{{ paymentAt | timeStr }}完成订单支付，请尽快安排发货
-      </div>
+      </div> -->
       <div class="ml-auto">
-        <el-button type="primary" size="mini">发货</el-button>
+        <el-button @click="toLogistics" type="primary" size="mini"
+          >查看物流</el-button
+        >
       </div>
     </div>
   </div>
@@ -64,6 +70,7 @@ export default {
       countDownList: '00天00时00分00秒'
     }
   },
+  inject: ['reload'],
   mounted() {
     this.countDown()
   },
@@ -106,9 +113,46 @@ export default {
             obj.day + '天' + obj.hou + '时' + obj.min + '分' + obj.sec + '秒'
         }, 1000)
       }
+    },
+    // 发货
+    toShipment() {
+      this.$router.push({ name: 'orders.shipment', params: { id: this.id } })
+    },
+    // 物流详情
+    toLogistics() {
+      this.$router.push({ name: 'orders.logistics', params: { id: this.id } })
+    },
+    // 关闭订单
+    async cancelOrder() {
+      try {
+        await axios.put(`/api/orders/${this.id}/cancel`)
+        this.reload()
+      } catch (error) {
+        if (_.get(error, 'response.status') == 422) {
+          console.log(error.response)
+          this.$message({
+            message: _.get(error, 'response.message'),
+            type: 'error'
+          })
+        }
+      }
+    },
+    onCancel() {
+      this.$confirm('是否确定关闭该订单', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          this.cancelOrder()
+        })
+        .catch()
     }
   },
   computed: {
+    id() {
+      return _.get(this.field, 'value.id')
+    },
     // 订单创建时间
     createdAt() {
       return _.get(this.field, 'value.created_at')

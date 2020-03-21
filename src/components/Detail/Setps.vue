@@ -70,8 +70,8 @@ export default {
           { name: '待付款', value: 0 },
           { name: '待发货', value: 2 },
           { name: '待收货', value: 3 },
-          { name: '待评价', value: 4 },
-          { name: '已完成', value: 5 }
+          { name: '已完成', value: 4 },
+          { name: '待评价', value: 5 }
         ]
       }
     }

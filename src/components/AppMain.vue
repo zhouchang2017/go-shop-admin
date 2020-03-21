@@ -25,7 +25,7 @@
       <!-- <keep-alive :include="cachedViews">
         <router-view class="p-10 flex w-full" :key="key" />
       </keep-alive> -->
-      <router-view class="md:p-10 p-3 w-full" :key="key" />
+      <router-view v-if="isRouterAlive" class="md:p-10 p-3 w-full" :key="key" />
     </transition>
   </main>
 </template>
@@ -33,6 +33,24 @@
 <script>
 export default {
   name: 'app-main',
+  provide() {
+    return {
+      reload: this.reload
+    }
+  },
+  data() {
+    return {
+      isRouterAlive: true
+    }
+  },
+  methods: {
+    reload() {
+      this.isRouterAlive = false
+      this.$nextTick(function() {
+        this.isRouterAlive = true
+      })
+    }
+  },
   computed: {
     cachedViews() {
       return this.$store.state.tagsView.cachedViews

@@ -1,11 +1,18 @@
 <template>
-  <div :class="`text-${field.text_align} flex flex-col items-center h-full`">
+  <div :class="`text-${field.text_align} flex flex-col h-full`">
     <div class="flex items-center">
       <div :class="warpClass"></div>
       <div>{{ value }}</div>
     </div>
-    <div class="flex" v-if="status === 2">
-      <el-button type="primary" size="mini">发货</el-button>
+    <div class="flex mt-1" v-if="status === 2">
+      <el-link type="primary" @click="toShipment" :underline="false"
+        >发货</el-link
+      >
+    </div>
+    <div class="flex mt-1" v-if="status === 3">
+      <el-link type="primary" @click="toLogistics" :underline="false"
+        >查看物流</el-link
+      >
     </div>
   </div>
 </template>
@@ -22,14 +29,35 @@ export default {
         { name: '已付款', value: 1 },
         { name: '待发货', value: 2 },
         { name: '待收货', value: 3 },
-        { name: '待评价', value: 4 },
-        { name: '已完成', value: 5 },
+        { name: '已完成', value: 4 },
+        { name: '待评价', value: 5 },
+
         { name: 'N/A', value: null }
       ]
     }
   },
 
+  methods: {
+    // 发货
+    toShipment() {
+      this.$router.push({
+        name: 'orders.shipment',
+        params: { id: this.id }
+      })
+    },
+    // 物流详情
+    toLogistics() {
+      this.$router.push({
+        name: 'orders.logistics',
+        params: { id: this.id }
+      })
+    }
+  },
+
   computed: {
+    id() {
+      return _.get(this.field, 'value.id', null)
+    },
     status() {
       return _.get(this.field, 'value.status', null)
     },
