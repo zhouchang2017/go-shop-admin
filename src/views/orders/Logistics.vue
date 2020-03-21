@@ -34,7 +34,7 @@
           <div
             v-for="(shipped, index) in logistics"
             :key="index"
-            class="bg-white rounded-lg overflow-hidden mb-3"
+            class="bg-white rounded-lg overflow-hidden mb-3 shadow-lg"
           >
             <div
               class="sm:flex-row sm:items-center flex flex-col sm:justify-between w-full text-xs bg-gray-100 p-3 "
