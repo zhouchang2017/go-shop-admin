@@ -104,6 +104,7 @@
 
         <el-form-item label="销售属性" prop="options" class="full">
           <sku-options
+            :onFetchOptions="fetchAvailableOptionNames"
             ref="skuOptions"
             v-model="resource.options"
             :token="token"
@@ -204,11 +205,23 @@ export default {
     }
   },
   methods: {
+    fetchAvailableOptionNames() {
+      return new Promise(async resolve => {
+        try {
+          let { data } = await axios.get('/creation-info/products/options')
+          resolve(data)
+        } catch (error) {
+          console.error(error)
+          resolve([])
+        }
+      })
+    },
     fillFromTaobao(resource) {
       this.$nextTick(() => {
         this.resource.name = resource.name
         this.resource.attributes = resource.attributes
         this.resource.price = resource.price
+        this.resource.code = resource.code
         this.$set(this.resource, 'images', resource.images)
         this.$set(this.resource, 'options', resource.options)
         // this.$set(this.resource, 'items', resource.items)

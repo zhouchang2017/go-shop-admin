@@ -94,7 +94,9 @@ export default {
           })
           .catch(err => {})
       } catch ({ response }) {
-        if (response.status === 422) {
+        this.loading = false
+
+        if (_.get(response, 'status') === 422) {
           const message = response.data.message
           this.$message.error(message)
 
@@ -104,7 +106,6 @@ export default {
             item.showMessage = true
           })
         }
-        this.loading = false
       }
     },
 

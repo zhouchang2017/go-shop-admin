@@ -1,7 +1,7 @@
 <template>
   <el-form-item :required="isRequired" :error="firstError" :label="field.name">
     <div class="flex flex-wrap">
-      <draggable v-model="value" class="flex flex-wrap">
+      <draggable v-model="images" class="flex flex-wrap">
         <div
           class="w-24 h-24 relative  hover-trigger rounded overflow-hidden mr-2 mb-2"
           v-for="file in images"

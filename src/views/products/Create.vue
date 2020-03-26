@@ -72,8 +72,13 @@ export default {
         if (_.get(error, 'response.status') == 422) {
           console.log(error.response)
           // this.validationErrors = new Errors(error.response.data.errors)
+          let message = _.get(
+            error,
+            'response.data.message',
+            'There was a problem submitting the form.'
+          )
           this.$message({
-            message: 'There was a problem submitting the form.',
+            message: message,
             type: 'error'
           })
         }

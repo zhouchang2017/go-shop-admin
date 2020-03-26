@@ -205,11 +205,17 @@ export default {
   beforeMount() {
     let { onFetchOptions } = this
     if (typeof onFetchOptions === 'function') {
-      if (this.isPromiseLike(onFetchOptions)) {
-        onFetchOptions().then(options => {
-          this.options = options
+      onFetchOptions().then(options => {
+        options.forEach(option => {
+          this.onCreateOption(option).then(uid => {
+            let newOption = {}
+            newOption[this.optionIdKey] = uid
+            newOption[this.optionNameKey] = option
+            newOption[this.optionValuesKey] = []
+            this.options.push(newOption)
+          })
         })
-      }
+      })
     }
   }
 }

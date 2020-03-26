@@ -102,6 +102,7 @@ export default {
     },
     // 创建销售属性
     createOption(data) {
+      if (!data) return
       let { index, optionIdKey, optionNameKey } = this
       let option = {}
       let name = data

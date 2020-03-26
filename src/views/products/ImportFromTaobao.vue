@@ -76,6 +76,7 @@
 
           <el-form-item label="销售规格" prop="items" class="full">
             <sku-table
+              :onFetchOptions="fetchAvailableOptionNames"
               @on-change-data="handleChangeData"
               :data="resource.options"
               :items="items"
@@ -161,6 +162,17 @@ export default {
     }
   },
   methods: {
+    fetchAvailableOptionNames() {
+      return new Promise(async resolve => {
+        try {
+          let { data } = await axios.get('/creation-info/products/options')
+          resolve(data)
+        } catch (error) {
+          console.error(error)
+          resolve([])
+        }
+      })
+    },
     paserUrl(urlStr) {
       if (urlStr === '') {
         this.$message.error('缺少url参数')
@@ -191,16 +203,14 @@ export default {
             let res = await axios.get(`/taobao/products/${params.id}`)
             this.$set(this, 'response', res.data)
             this.loaded = true
-            this.resource.name = res.data.name
-            this.resource.price = res.data.price
-            this.resource.attributes = res.data.attributes
-            this.resource.options = res.data.options
-            this.items = res.data.items
+            this.resource.name = _.get(res, 'data.name', '')
+            this.resource.price = _.get(res, 'data.price', 1)
+            this.resource.images = _.get(res, 'data.images', [])
+            this.resource.attributes = _.get(res, 'data.attributes', [])
+            this.resource.options = _.get(res, 'data.options', [])
+            this.items = _.get(res, 'data.items', [])
             // this.resource.options.
-            if (_.get(res, 'data.Meta.images', []).length > 0) {
-              this.resource.images = res.data.Meta.images
-            }
-            if (res.data.description.length > 0) {
+            if (res.data.description.length !== '') {
               this.resource.description = res.data.description
             }
             this.loading = false
@@ -252,6 +262,7 @@ export default {
       }
     },
     handleChangeData(data) {
+      if (data.length === 0) return
       this.resource.items = data
     },
     handleDelete(index) {
@@ -261,27 +272,14 @@ export default {
       try {
         await this.paser3rdUrl()
         this.$emit('fill', this.resource)
-        let element = '<div><div class="mb-3">参考销售属性</div>'
-        this.response.options.forEach(option => {
-          element += `<div class="text-gray-700 font-bold">${option.name}</div>`
-          if (_.has(option, 'values')) {
-            element += `<div class="ml-3 text-xs text-gray-500 flex flex-row flex-wrap">`
-            option.values.forEach(value => {
-              element += `<div class="rounded bg-gray-200 mr-2 px-2 py-1 my-1">${value.name}</div>`
-            })
-            element += `</div>`
-          }
-        })
-        element += '</div>'
+
         this.$notify({
           title: '填充成功',
-          duration: 2000,
-          dangerouslyUseHTMLString: true,
-          message: element
+          duration: 2000
         })
         this.fetchTaobaoDialog = false
       } catch (error) {
-        this.$message.error('填充错误')
+        this.$message.error('填充失败')
       }
     },
     resolveUrl(file) {

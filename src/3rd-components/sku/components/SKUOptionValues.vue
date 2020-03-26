@@ -64,9 +64,9 @@
             </div>
           </div>
         </draggable>
-        <div v-if="sku[optionIdKey] > 0">
+        <div class=" " v-if="sku[optionIdKey] > 0">
           <el-input
-            class="input-new-tag"
+            class="input-new-tag inline-flex"
             v-if="inputVisible"
             v-model="inputValue"
             ref="saveTagInput"

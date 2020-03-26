@@ -121,10 +121,15 @@ export default {
       } catch (error) {
         this.isWorking = false
 
-        if (error.response.status == 422) {
+        if (_.get(error, 'response.status') == 422) {
           // this.validationErrors = new Errors(error.response.data.errors)
+          let message = _.get(
+            error,
+            'response.data.message',
+            'There was a problem submitting the form.'
+          )
           this.$message({
-            message: 'There was a problem submitting the form.',
+            message: message,
             type: 'error'
           })
         }

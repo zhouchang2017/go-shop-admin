@@ -64,8 +64,13 @@ _axios.interceptors.response.use(
         })
         return
       case 500:
+        let message = _.get(
+          error,
+          'response.data.message',
+          _.get(error, 'response.statusText')
+        )
         Message({
-          message: error.response.data.message,
+          message: message,
           type: 'error',
           duration: 5 * 1000
         })
