@@ -45,6 +45,7 @@ export default {
     perPage: 15,
     resourceTotal: 0
   }),
+
   methods: {
     // 获取资源.
     getResources() {
@@ -273,6 +274,11 @@ export default {
     // 当前trashed值
     currentTrashed() {
       return this.$route.query[this.trashedParameter] || false
+    },
+
+    // 是否显示filters Trashed选项
+    showTrashed() {
+      return _.get(this, '$route.meta.Trashed', false)
     },
 
     // 当前分页步长

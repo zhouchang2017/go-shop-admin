@@ -1,10 +1,23 @@
 <template>
-  <card v-loading="loading">
-    <div class="p-6">
-      <div class="mb-4">
-        <h3 class="mr-3 text-base text-80 font-bold">{{ card.name }}</h3>
+  <card class="shadow-none" v-loading="loading">
+    <div class="px-6 py-3">
+      <div class="flex justify-between items-center">
+        <h3 class="text-gray-600 font-medium tracking-wide">
+          {{ card.name }}
+        </h3>
+        <div class="text-gray-500 text-xs" v-if="card.router">
+          <router-link
+            :to="card.router"
+            class="cursor-pointer inline-block text-gray-500 hover:text-blue-500 focus:outline-none"
+            title="查看"
+          >
+            <icons-icon viewBox="0 0 24 20" type="icons-more" />
+          </router-link>
+        </div>
       </div>
-      <ve-line :data="chartData" :settings="settings"></ve-line>
+      <ve-line :data="chartData" :settings="settings">
+        <div class="data-empty" v-if="value.length === 0">没有数据😂</div>
+      </ve-line>
     </div>
   </card>
 </template>
@@ -39,7 +52,10 @@ export default {
   },
   data: () => ({
     loading: true,
-    value: null
+    value: [],
+    grid: {
+      borderColor: '#fff'
+    }
   }),
 
   created() {},
@@ -83,3 +99,19 @@ export default {
   }
 }
 </script>
+
+<style>
+.data-empty {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.7);
+  color: #888;
+  font-size: 14px;
+}
+</style>

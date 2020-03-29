@@ -1,6 +1,12 @@
 <template>
   <div class="flex flex-col">
     <div v-if="shouldShowCards">
+      <grid
+        v-if="gridCards.length > 0"
+        :cards="gridCards"
+        class="mb-3"
+        :resource-name="resourceName"
+      />
       <cards
         v-if="smallCards.length > 0"
         :cards="smallCards"

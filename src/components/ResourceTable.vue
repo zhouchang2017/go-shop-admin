@@ -52,7 +52,11 @@
             </div>
           </dropdown>
         </div>
-        <filter-box zIndex="100" :count="activeFilterCount" v-if="hasFilters">
+        <filter-box
+          zIndex="100"
+          :count="activeFilterCount"
+          v-if="showTrashed || hasFilters"
+        >
           <component
             v-for="filter in filters"
             :key="filter.key"
@@ -61,7 +65,7 @@
             :filter-key="filter.key"
             @change="filterChanged"
           />
-          <filter-box-item name="Trashed">
+          <filter-box-item v-if="showTrashed" name="Trashed">
             <el-checkbox v-model="trashed">显示软删除资源</el-checkbox>
           </filter-box-item>
         </filter-box>

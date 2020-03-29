@@ -221,7 +221,6 @@ export default {
         this.resource.name = resource.name
         this.resource.attributes = resource.attributes
         this.resource.price = resource.price
-        this.resource.code = resource.code
         this.$set(this.resource, 'images', resource.images)
         this.$set(this.resource, 'options', resource.options)
         // this.$set(this.resource, 'items', resource.items)

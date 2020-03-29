@@ -58,6 +58,10 @@ export default {
       return _.filter(this.cards, c => c.width == 'full')
     },
 
+    gridCards() {
+      return _.filter(this.cards, c => c.grid)
+    },
+
     /**
      * Get the extra card params to pass to the endpoint.
      */

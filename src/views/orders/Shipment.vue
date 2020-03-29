@@ -147,7 +147,11 @@
           <el-table-column label="数量" prop="count" />
           <el-table-column label="发货门店" align="left" min-width="200">
             <template slot-scope="{ row }">
-              <el-checkbox-group v-model="row.shops" :max="row.count">
+              <el-checkbox-group
+                v-if="row.shops"
+                v-model="row.shops"
+                :max="row.count"
+              >
                 <el-checkbox
                   v-for="shop in shops"
                   :key="shop.id"
@@ -247,11 +251,13 @@ export default {
         axios.get('/api/' + this.resourceName + '/' + this.resourceId)
       )
         .then(({ data }) => {
+          data = this.assignShipped(data)
+          data = this.initLogistics(data)
+          console.log(data)
           this.resource = data
-          this.assignShipped()
-          this.initLogistics()
         })
         .catch(error => {
+          console.log(error)
           if (error.response.status >= 500) {
             this.$Bus.$emit('error', error.response.data.message)
             return
@@ -277,9 +283,12 @@ export default {
           })
         })
     },
-    assignShipped() {
+    assignShipped(data) {
       // 以itemid分组
-      let shippedMap = this.logistics.reduce((res, shipped) => {
+      if (data.logistics === null) {
+        data.logistics = []
+      }
+      let shippedMap = data.logistics.reduce((res, shipped) => {
         shipped.items.forEach(item => {
           let shop = this.shops.find(shop => shop.id === item.shop_id)
 
@@ -292,17 +301,18 @@ export default {
         return res
       }, {})
       this.$set(this, 'shippedMap', shippedMap)
+      return data
     },
-    initLogistics() {
-      this.resource.order_items.forEach(item => {
+    initLogistics(data) {
+      data.order_items.forEach(item => {
         let shops = []
         if (_.has(this.shippedMap, item.item.id)) {
           shops = this.shippedMap[item.item.id].map(shipped => shipped.shop_id)
         }
-        this.$set(item, 'shops', shops)
+        item.shops = shops
       })
       // 设置缓存
-      this.logistics.forEach(shipped => {
+      data.logistics.forEach(shipped => {
         let shopId = _.get(shipped, 'items[0].shop_id')
         this.setCacheLogistics(shopId, {
           delivery_id: shipped.delivery_id,
@@ -310,6 +320,7 @@ export default {
           no_delivery: shipped.no_delivery
         })
       })
+      return data
     },
     getShops() {
       return Minimum(axios.get('/api/shops?page=-1'))
@@ -336,10 +347,11 @@ export default {
           orderItem: item,
           count: 1
         }
-        if (item.shops.length === 1) {
+        let shops = _.get(item, 'shops', [])
+        if (shops === 1) {
           obj.count = item.count
         }
-        item.shops.forEach(id => {
+        shops.forEach(id => {
           let data = res.find(col => col.shop_id === id)
           if (data) {
             // 首次，设置已选择数量

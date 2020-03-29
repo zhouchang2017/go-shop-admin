@@ -1,10 +1,30 @@
 <template>
   <div class="p-3">
+    <el-dialog title="关闭订单" :visible.sync="dialogCancelOrderVisible">
+      <el-form :model="form">
+        <el-form-item label="关闭理由">
+          <el-input
+            placeholder="请输入关闭理由"
+            v-model="form.reason"
+            maxlength="20"
+            show-word-limit
+          ></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogCancelOrderVisible = false">取 消</el-button>
+        <el-button :loading="loading" type="primary" @click="onCancel"
+          >确 定</el-button
+        >
+      </div>
+    </el-dialog>
+
     <detail-setps v-if="showSteps" :value="status" />
 
     <!-- 交易关闭 -->
     <div v-if="status === -1" class="flex flex-col  p-3 text-gray-700">
       <p class="font-bold">当前订单状态：交易关闭</p>
+      <div class="mt-3 text-sm">关闭理由:{{ reason }}</div>
     </div>
 
     <!-- 等待付款 -->
@@ -19,7 +39,10 @@
         }}后自动关闭
       </div>
       <div class="ml-auto">
-        <el-button type="info" @click="onCancel" size="mini"
+        <el-button
+          type="info"
+          @click="dialogCancelOrderVisible = true"
+          size="mini"
           >关闭订单</el-button
         >
       </div>
@@ -64,10 +87,15 @@ export default {
   props: ['resource', 'resourceName', 'resourceId', 'field'],
   data() {
     return {
+      dialogCancelOrderVisible: false,
       stepDescriptions: [
         { value: 0, title: '当前订单状态：买家已下单，等待买家付款' }
       ],
-      countDownList: '00天00时00分00秒'
+      countDownList: '00天00时00分00秒',
+      form: {
+        reason: '暂时缺货'
+      },
+      loading: false
     }
   },
   inject: ['reload'],
@@ -125,9 +153,12 @@ export default {
     // 关闭订单
     async cancelOrder() {
       try {
-        await axios.put(`/api/orders/${this.id}/cancel`)
+        this.loading = true
+        await axios.put(`/api/orders/${this.id}/cancel`, this.form)
+        this.dialogCancelOrderVisible = false
         this.reload()
       } catch (error) {
+        this.loading = false
         if (_.get(error, 'response.status') == 422) {
           console.log(error.response)
           this.$message({
@@ -152,6 +183,9 @@ export default {
   computed: {
     id() {
       return _.get(this.field, 'value.id')
+    },
+    reason() {
+      return _.get(this.field, 'value.close_reason')
     },
     // 订单创建时间
     createdAt() {
