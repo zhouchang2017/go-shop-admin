@@ -25,7 +25,7 @@ _axios.interceptors.request.use(
     // Do something before request is sent
     if (store.getters.token) {
       // 每次请求携带token
-      config.headers['Authorization'] = `Bearer ${getToken()}`
+      config.headers['Authorization'] = getToken()
     }
     return config
   },
@@ -39,6 +39,12 @@ _axios.interceptors.request.use(
 _axios.interceptors.response.use(
   function(response) {
     // Do something with response data
+    if (_.has(response, 'headers.refresh-token')) {
+      let refreshToken = _.get(response, 'headers.refresh-token')
+      if (refreshToken) {
+        store.commit('auth/SET_TOKEN', refreshToken)
+      }
+    }
     return response
   },
   async function(error) {

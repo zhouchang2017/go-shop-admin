@@ -22,6 +22,7 @@
           </div>
 
           <div class="text-gray-700 ml-auto flex items-center">
+            <add-order :option="option" />
             <div class="text-gray-700 mr-3">无需物流</div>
             <input
               class="mr-3"
@@ -124,6 +125,9 @@
 <script>
 export default {
   inject: ['order'],
+  components: {
+    'add-order': () => import('./AddOrder')
+  },
   data() {
     return {}
   },

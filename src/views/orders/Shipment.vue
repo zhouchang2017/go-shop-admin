@@ -214,7 +214,8 @@ export default {
       options: [],
       cacheLogistics: {},
       shippedMap: {},
-      once: true
+      once: true,
+      myLogistics: []
     }
   },
   watch: {
@@ -233,6 +234,7 @@ export default {
       try {
         await this.getShops()
         await this.getResource()
+        await this.getLogistics()
         this.loading = false
         this.initialLoading = false
       } catch (error) {
@@ -326,6 +328,15 @@ export default {
       return Minimum(axios.get('/api/shops?page=-1'))
         .then(({ data }) => {
           this.shops = data.data
+        })
+        .catch(error => {
+          console.log(error)
+        })
+    },
+    getLogistics() {
+      return Minimum(axios.get('/mp/logistics'))
+        .then(({ data }) => {
+          this.myLogistics = data
         })
         .catch(error => {
           console.log(error)

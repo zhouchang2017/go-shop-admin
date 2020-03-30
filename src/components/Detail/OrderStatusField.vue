@@ -79,6 +79,25 @@
         >
       </div>
     </div>
+
+    <!-- 申请退款中 -->
+    <div
+      v-if="status === 6"
+      class="flex flex-col bg-gray-200 rounded p-3 text-gray-700 mt-3"
+    >
+      <p class="font-bold">当前订单状态：买家申请退款，等待处理</p>
+      <!-- <div class="mt-3 text-sm">
+        {{ buyer }}在{{ paymentAt | timeStr }}完成订单支付，请尽快安排发货
+      </div> -->
+      <div class="ml-auto">
+        <el-button class="mr-1" @click="toLogistics" size="mini"
+          >拒绝退款</el-button
+        >
+        <el-button @click="onAgreeRefund" type="danger" size="mini"
+          >同意退款</el-button
+        >
+      </div>
+    </div>
   </div>
 </template>
 
@@ -168,6 +187,66 @@ export default {
         }
       }
     },
+    // 同意退款
+    async agreeRefund() {
+      try {
+        this.loading = true
+        await axios.post(`/api/orders/${this.id}/refund/agree`, {
+          order_no: this.orderNo
+        })
+        this.reload()
+      } catch (error) {
+        this.loading = false
+        if (_.get(error, 'response.status') == 422) {
+          console.log(error.response)
+          this.$message({
+            message: _.get(error, 'response.message'),
+            type: 'error'
+          })
+        }
+      }
+    },
+    // 拒绝退款
+    async rejectRefund() {
+      try {
+        this.loading = true
+        await axios.post(`/api/orders/${this.id}/refund/reject`, {
+          order_no: this.orderNo
+        })
+        this.reload()
+      } catch (error) {
+        this.loading = false
+        if (_.get(error, 'response.status') == 422) {
+          console.log(error.response)
+          this.$message({
+            message: _.get(error, 'response.message'),
+            type: 'error'
+          })
+        }
+      }
+    },
+    onAgreeRefund() {
+      this.$confirm('是否确定同意退款', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          this.agreeRefund()
+        })
+        .catch()
+    },
+    onRejectRefund() {
+      this.$confirm('是否确定拒绝退款', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          this.rejectRefund()
+        })
+        .catch()
+    },
     onCancel() {
       this.$confirm('是否确定关闭该订单', '提示', {
         confirmButtonText: '确定',
@@ -183,6 +262,9 @@ export default {
   computed: {
     id() {
       return _.get(this.field, 'value.id')
+    },
+    orderNo() {
+      return _.get(this.field, 'value.order_no')
     },
     reason() {
       return _.get(this.field, 'value.close_reason')

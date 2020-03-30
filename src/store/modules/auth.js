@@ -36,7 +36,7 @@ const actions = {
         .then(response => {
           if (response.status === 200) {
             const { data } = response
-            commit('SET_TOKEN', data.access_token)
+            commit('SET_TOKEN', data)
             resolve()
           } else {
             reject(data)
