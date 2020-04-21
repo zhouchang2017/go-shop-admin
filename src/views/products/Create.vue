@@ -7,19 +7,15 @@
     </div>
 
     <post-form :ref="formRef" :value.sync="resource" />
-    <div class="mb-6"></div>
-
-    <div class="fixed bottom-0 left-0 w-full sm:pl-64">
-      <div class="flex w-full bg-white p-3">
-        <div class="ml-auto"></div>
-        <el-button @click="reset">Reset</el-button>
-        <el-button
-          @click="submitViaCreateResource"
-          :loading="isWorking"
-          type="primary"
-          >Create</el-button
-        >
-      </div>
+    <div class="flex w-full">
+      <div class="ml-auto"></div>
+      <el-button @click="reset">重置</el-button>
+      <el-button
+        @click="submitViaCreateResource"
+        :loading="isWorking"
+        type="primary"
+        >创建</el-button
+      >
     </div>
   </div>
 </template>

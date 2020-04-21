@@ -10,9 +10,16 @@
           <el-image
             fit="cover"
             class="h-full w-full"
-            :src="file.url"
+            :src="remoteUrl(file.url)"
             lazy
-          ></el-image>
+          >
+            <div
+              slot="placeholder"
+              class="flex items-center justify-center h-full w-full"
+            >
+              <icons-loader class="text-gray-500" />
+            </div>
+          </el-image>
           <div
             class="absolute hover-target w-full h-full top-0 hover-target__actions"
           >
@@ -62,9 +69,11 @@
         :data="{ token: field.token }"
         :on-error="onErrorHandle"
         :on-exceed="onExceed"
-        :file-list="value"
+        :file-list="images"
         :limit="limit"
-        :action="field.action"
+        action=""
+        :http-request="uploadFile"
+        v-bind="$attrs"
         :show-file-list="!!listType"
         class="flex"
       >
@@ -124,9 +133,11 @@
 <script>
 import FormField from '@/mixins/FormField'
 import HandlesValidationErrors from '@/mixins/HandlesValidationErrors'
+import * as qiniu from 'qiniu-js'
+
 export default {
   mixins: [FormField, HandlesValidationErrors],
-
+  inheritAttrs: false,
   components: {
     draggable: () => import('vuedraggable')
   },
@@ -194,7 +205,7 @@ export default {
       return this.$confirm(`确定移除 ${file.name}？`)
     },
     handlePictureCardPreview(file) {
-      this.dialogImageUrl = file.url
+      this.dialogImageUrl = this.remoteUrl(file.url)
       this.dialogVisible = true
     },
     // 超出数量限制提示
@@ -211,6 +222,7 @@ export default {
       console.log(err)
       console.log(file)
       console.log(fileList)
+      this.$message.error('token过期，请刷新本页')
     },
     // 上传前置钩子
     onBeforeUploadHandle(file) {
@@ -247,7 +259,7 @@ export default {
     onSuccessHandle(response, file) {
       setTimeout(() => {
         const { key } = response
-        file.url = `${this.appConfig.qiniu_cdn_domain}/${key}`
+        file.url = key
         this.images.push({
           ...response,
           url: file.url,
@@ -257,10 +269,55 @@ export default {
       }, 500)
     },
     //
-    onProgress(event, file, fileList) {}
+    onProgress(event, file, fileList) {
+      if (event.total) {
+        this.$set(file, 'percent', event.total.percent)
+      }
+    },
+    remoteUrl(key) {
+      key = key.replace(this.appConfig.qiniu_cdn_domain, '')
+      return `${this.appConfig.qiniu_cdn_domain}/${key}`
+    },
+    uploadFile(option) {
+      const fileName = this.changeFileName(option.file.name)
+
+      const observable = qiniu.upload(
+        option.file,
+        fileName,
+        this.field.token,
+        this.qnPutextra,
+        this.qnConfig
+      )
+      observable.subscribe({
+        next: option.onProgress,
+        error: option.onError,
+        complete: option.onSuccess
+      })
+    },
+    // 修改原文件名，给文件名添加一个时间戳
+    changeFileName(filename) {
+      return filename.replace(/.[a-zA-Z0-9]+$/, match => {
+        return `-${Date.now()}${match}`
+      })
+    }
   },
 
   computed: {
+    qnConfig() {
+      return {
+        useCdnDomain: true,
+        disableStatisticsReport: false,
+        retryCount: 6,
+        region: qiniu.region.z2
+      }
+    },
+    qnPutextra() {
+      return {
+        fname: '',
+        params: {},
+        mimeType: null
+      }
+    },
     // 上传类型
     type() {
       return _.get(this, 'field.type', 'file')

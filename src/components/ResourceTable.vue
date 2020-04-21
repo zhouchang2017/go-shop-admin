@@ -112,7 +112,7 @@
       <!-- Resource Action -->
       <el-table-column
         v-if="shouldShowActions"
-        label="Actions"
+        label=""
         align="right"
         class-name="small-padding fixed-width"
       >

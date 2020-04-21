@@ -1,6 +1,19 @@
 <template>
   <div>
+    <div v-if="isWxOrder" class="mr-3 flex">
+      <div class="bg-blue-400 align-middle text-white px-3 py-1 rounded mr-1">
+        物流助手已下单
+      </div>
+      <el-button
+        @click="onCancel"
+        size="mini"
+        type="danger"
+        :loading="isWorking"
+        >取消下单</el-button
+      >
+    </div>
     <el-button
+      v-else
       size="mini"
       type="primary"
       class="mr-3"
@@ -156,8 +169,8 @@ export default {
       required: true
     }
   },
-  mounted() {
-    this.form.shop = this.option.shop
+  async mounted() {
+    await this.componentInit()
   },
   data() {
     var validateTime = (rule, value, callback) => {
@@ -201,6 +214,12 @@ export default {
     }
   },
   methods: {
+    async componentInit() {
+      this.form.shop = this.option.shop
+      if (this.option.waybill_id && this.option.waybill_id !== '') {
+        await this.getOrder()
+      }
+    },
     resourceTransform() {
       let option = {
         order_id: this.order.resource.id,
@@ -227,7 +246,6 @@ export default {
       return option
     },
     async createResource() {
-      console.log('111')
       this.isWorking = true
       try {
         const formData = await this.submit()
@@ -238,22 +256,83 @@ export default {
           message: '下单成功',
           type: 'success'
         })
+        this.reload()
       } catch (error) {
         this.isWorking = false
-
+        let message = 'There was a problem submitting the form.'
         if (_.get(error, 'response.status') == 422) {
           console.log(error.response)
           // this.validationErrors = new Errors(error.response.data.errors)
-          let message = _.get(
-            error,
-            'response.data.message',
-            'There was a problem submitting the form.'
-          )
-          this.$message({
-            message: message,
-            type: 'error'
-          })
+          message = _.get(error, 'response.data.message', message)
         }
+        this.$message({
+          message: message,
+          type: 'error'
+        })
+      }
+
+      this.isWorking = false
+    },
+    async getOrder() {
+      try {
+        let { data } = await axios.get('/mp/logistics/get-order', {
+          params: {
+            order_no: this.order.resource.order_no,
+            delivery_id: this.option.delivery_id,
+            waybill_id: this.option.waybill_id
+          }
+        })
+        console.log(data)
+      } catch (error) {
+        let message = 'There was a problem submitting the form.'
+        if (_.get(error, 'response.status') == 422) {
+          console.log(error.response)
+          // this.validationErrors = new Errors(error.response.data.errors)
+          message = _.get(error, 'response.data.message', message)
+        }
+        this.$message({
+          message: message,
+          type: 'error'
+        })
+      }
+    },
+    onCancel() {
+      this.$confirm('是否确定取消', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          this.cancelOrder()
+        })
+        .catch()
+    },
+    async cancelOrder() {
+      this.isWorking = true
+      try {
+        const { data } = await axios.post(`/mp/logistics/cancel-order`, {
+          order_no: this.order.resource.order_no,
+          delivery_id: this.option.delivery_id,
+          waybill_id: this.option.waybill_id
+        })
+        this.isWorking = false
+        this.$message({
+          message: '取消成功',
+          type: 'success'
+        })
+        this.reload()
+      } catch (error) {
+        this.isWorking = false
+        let message = 'There was a problem submitting the form.'
+        if (_.get(error, 'response.status') == 422) {
+          console.log(error.response)
+          // this.validationErrors = new Errors(error.response.data.errors)
+          message = _.get(error, 'response.data.message', message)
+        }
+        this.$message({
+          message: message,
+          type: 'error'
+        })
       }
 
       this.isWorking = false
@@ -276,6 +355,9 @@ export default {
         tel = address.tel
       }
       return `${address.province}${address.city}${address.areas}${address.addr}，发件人：${address.name}，联系电话：${tel}`
+    },
+    isWxOrder() {
+      return !!_.get(this, 'option.waybill_id')
     }
   }
 }

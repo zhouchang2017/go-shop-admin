@@ -10,6 +10,20 @@ const Filters = [
     }
   },
   {
+    name: 'timeDateStr',
+    handler: time => {
+      if (!time) return '-'
+      return dayjs(time).format('MM-DD')
+    }
+  },
+  {
+    name: 'timeTimeStr',
+    handler: time => {
+      if (!time) return '-'
+      return dayjs(time).format('HH:mm')
+    }
+  },
+  {
     name: 'money',
     handler: value => {
       if (!value) return '-'

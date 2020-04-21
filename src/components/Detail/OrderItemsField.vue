@@ -9,7 +9,11 @@
             >
               <div class="mr-3 w-1/5">活动名称</div>
               <div class="mr-3 w-3/5">活动说明</div>
-              <div class="mr-3 w-1/5">优惠单价</div>
+              <el-tooltip effect="dark" content="可能存在误差" placement="top">
+                <div class="mr-3 w-1/5">
+                  优惠单价
+                </div>
+              </el-tooltip>
               <div class="w-1/5">优惠小计</div>
             </div>
             <div
@@ -57,40 +61,33 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="缩略图">
+      <el-table-column label="货品" min-width="150">
         <template slot-scope="{ row }">
-          <el-image
-            class="h-12 w-12 rounded"
-            fit="cover"
-            width="100%"
-            :src="row.item.avatar"
-            lazy
-          ></el-image>
+          <div class="flex">
+            <div class="mr-3">
+              <el-image
+                class="h-12 w-12 rounded"
+                fit="cover"
+                width="100%"
+                :src="row.item.avatar"
+                lazy
+              ></el-image>
+            </div>
+            <div class="flex-1">
+              <div class="text-xs text-gray-800">
+                {{ row.item.product.name }}
+              </div>
+              <div class="text-xs font-bold text-gray-700">
+                {{ row.item.code }}
+              </div>
+              <div class="text-xs text-gray-500">
+                {{ row.item.option_values.map(value => value.name).join(' ') }}
+              </div>
+            </div>
+          </div>
         </template>
       </el-table-column>
-      <el-table-column min-width="150" label="货号" prop="item.code">
-        <template slot-scope="{ row }">
-          <router-link
-            class="cursor-pointer font-bold inline-block hover:text-blue-500"
-            :to="{
-              name: 'products.detail',
-              params: { id: row.item.product.id }
-            }"
-          >
-            {{ row.item.code }}
-          </router-link>
-        </template>
-      </el-table-column>
-      <el-table-column
-        show-overflow-tooltip
-        label="属性值"
-        align="left"
-        min-width="150"
-      >
-        <template slot-scope="{ row }">
-          {{ row.item.option_values.map(value => value.name).join(' ') }}
-        </template>
-      </el-table-column>
+
       <el-table-column label="数量" prop="count" />
       <el-table-column
         min-width="100"
@@ -122,7 +119,11 @@
         prop="amount"
       >
         <template slot-scope="{ row }">
-          {{ (row.amount * row.count) | money }}
+          {{
+            (row.price * row.count -
+              (row.promotion_info ? row.promotion_info.sale_prices : 0))
+              | money
+          }}
         </template>
       </el-table-column>
     </el-table>

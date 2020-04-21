@@ -19,12 +19,58 @@
       </div>
     </el-dialog>
 
-    <detail-setps v-if="showSteps" :value="status" />
+    <!-- 该订单有退款信息 -->
+    <div v-if="hasRefund" class="mb-6">
+      <el-alert type="error" :closable="false" class="mb-2 w-full">
+        <div class="flex w-full">
+          <p class=" font-bold">该订单有退款信息，请及时处理</p>
+          <div class="ml-auto">
+            <router-link
+              title="退款详情"
+              :to="{
+                name: 'orders.refund',
+                params: { id: resourceId }
+              }"
+              class="hover:opacity-75 font-bold inline-block text-xs text-blue-500"
+            >
+              前往退款详情
+            </router-link>
+          </div>
+        </div>
+      </el-alert>
+    </div>
+    <detail-setps
+      :options="setpOptions"
+      v-if="setpOptions.length > 0 && refundeds.length === 0"
+      :value="status"
+    />
 
     <!-- 交易关闭 -->
     <div v-if="status === -1" class="flex flex-col  p-3 text-gray-700">
       <p class="font-bold">当前订单状态：交易关闭</p>
-      <div class="mt-3 text-sm">关闭理由:{{ reason }}</div>
+      <div v-if="reason" class="mt-3 text-sm">关闭理由:{{ reason }}</div>
+      <el-alert
+        type="error"
+        :closable="false"
+        class="my-2 w-full"
+        v-if="field.value.refund_mark > 0"
+      >
+        <div class="flex w-full">
+          <p class=" font-bold">该笔订单包含退款</p>
+          <div class="ml-auto">
+            <router-link
+              title="退款详情"
+              :to="{
+                name: 'orders.refund',
+                params: { id: resourceId }
+              }"
+              class="hover:opacity-75 font-bold inline-block text-xs text-blue-500"
+            >
+              前往退款详情
+            </router-link>
+          </div>
+        </div>
+      </el-alert>
     </div>
 
     <!-- 等待付款 -->
@@ -80,23 +126,18 @@
       </div>
     </div>
 
-    <!-- 申请退款中 -->
+    <div
+      v-if="status === 5"
+      class="flex flex-col bg-gray-200 rounded p-3 text-gray-700 mt-3"
+    >
+      <p class="font-bold">当前订单状态：待评价</p>
+    </div>
+
     <div
       v-if="status === 6"
       class="flex flex-col bg-gray-200 rounded p-3 text-gray-700 mt-3"
     >
-      <p class="font-bold">当前订单状态：买家申请退款，等待处理</p>
-      <!-- <div class="mt-3 text-sm">
-        {{ buyer }}在{{ paymentAt | timeStr }}完成订单支付，请尽快安排发货
-      </div> -->
-      <div class="ml-auto">
-        <el-button class="mr-1" @click="toLogistics" size="mini"
-          >拒绝退款</el-button
-        >
-        <el-button @click="onAgreeRefund" type="danger" size="mini"
-          >同意退款</el-button
-        >
-      </div>
+      <p class="font-bold">当前订单状态：交易完成</p>
     </div>
   </div>
 </template>
@@ -187,66 +228,7 @@ export default {
         }
       }
     },
-    // 同意退款
-    async agreeRefund() {
-      try {
-        this.loading = true
-        await axios.post(`/api/orders/${this.id}/refund/agree`, {
-          order_no: this.orderNo
-        })
-        this.reload()
-      } catch (error) {
-        this.loading = false
-        if (_.get(error, 'response.status') == 422) {
-          console.log(error.response)
-          this.$message({
-            message: _.get(error, 'response.message'),
-            type: 'error'
-          })
-        }
-      }
-    },
-    // 拒绝退款
-    async rejectRefund() {
-      try {
-        this.loading = true
-        await axios.post(`/api/orders/${this.id}/refund/reject`, {
-          order_no: this.orderNo
-        })
-        this.reload()
-      } catch (error) {
-        this.loading = false
-        if (_.get(error, 'response.status') == 422) {
-          console.log(error.response)
-          this.$message({
-            message: _.get(error, 'response.message'),
-            type: 'error'
-          })
-        }
-      }
-    },
-    onAgreeRefund() {
-      this.$confirm('是否确定同意退款', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      })
-        .then(() => {
-          this.agreeRefund()
-        })
-        .catch()
-    },
-    onRejectRefund() {
-      this.$confirm('是否确定拒绝退款', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      })
-        .then(() => {
-          this.rejectRefund()
-        })
-        .catch()
-    },
+
     onCancel() {
       this.$confirm('是否确定关闭该订单', '提示', {
         confirmButtonText: '确定',
@@ -257,6 +239,10 @@ export default {
           this.cancelOrder()
         })
         .catch()
+    },
+
+    getRefundStatusText(status) {
+      return _.find(this.appConfig.refund_status, ['value', status]).name
     }
   },
   computed: {
@@ -273,6 +259,12 @@ export default {
     createdAt() {
       return _.get(this.field, 'value.created_at')
     },
+    statusObject() {
+      return _.find(this.appConfig.order_status, ['value', this.status])
+    },
+    statusType() {
+      return _.get(this, 'statusObject.type')
+    },
     // 订单状态
     status() {
       return _.get(this.field, 'value.status', null)
@@ -288,7 +280,52 @@ export default {
     // 买家名称
     buyer() {
       return _.get(this.field, 'value.user.nickname', '买家')
+    },
+    setpOptions() {
+      return _.get(this, 'appConfig.order_status', []).filter(
+        item => item.type === this.statusType && !!item.step
+      )
+    },
+    // 退款
+    refunds() {
+      let refunds = []
+      if (
+        this.field &&
+        this.field.value &&
+        this.field.value.refunds &&
+        this.field.value.refunds.length
+      ) {
+        refunds = this.field.value.refunds
+      }
+      let activeStatus = this.appConfig.refund_status.filter(
+        status => status.active
+      )
+      let activeStatusIds = activeStatus.map(item => item.value)
+      return refunds.filter(item => activeStatusIds.includes(item.status))
+    },
+    refundeds() {
+      let refunds = []
+      if (
+        this.field &&
+        this.field.value &&
+        this.field.value.refunds &&
+        this.field.value.refunds.length
+      ) {
+        refunds = this.field.value.refunds
+      }
+      return refunds.filter(refund => refund.status === 4)
+    },
+    hasRefund() {
+      return _.get(this, 'field.value.order_items', []).some(
+        item => item.refunding
+      )
     }
   }
 }
 </script>
+
+<style>
+.el-alert__content {
+  width: 100%;
+}
+</style>

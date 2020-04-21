@@ -8,19 +8,15 @@
 
     <template v-if="!initialLoading" v-loading="loading">
       <post-form :ref="formRef" :value="resource" />
-      <div class="mb-6"></div>
-
-      <div class="fixed bottom-0 left-0 w-full sm:pl-64">
-        <div class="flex w-full bg-white p-3">
-          <div class="ml-auto"></div>
-          <el-button @click="reset">Reset</el-button>
-          <el-button
-            :loading="isWorking"
-            @click="submitViaUpdateResource"
-            type="primary"
-            >Submit</el-button
-          >
-        </div>
+      <div class="flex w-full">
+        <div class="ml-auto"></div>
+        <el-button @click="reset">重置</el-button>
+        <el-button
+          :loading="isWorking"
+          @click="submitViaUpdateResource"
+          type="primary"
+          >提交</el-button
+        >
       </div>
     </template>
   </div>

@@ -31,6 +31,7 @@
             fit="cover"
             width="100%"
             :src="row.avatar"
+            scroll-container=".el-table__body-wrapper.is-scrolling-none"
             lazy
           />
         </template>

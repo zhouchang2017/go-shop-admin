@@ -4,15 +4,40 @@
       <div :class="warpClass"></div>
       <div>{{ value }}</div>
     </div>
-    <div class="flex mt-1" v-if="status === 2">
-      <el-link type="primary" @click="toShipment" :underline="false"
-        >发货</el-link
+    <div class="flex flex-wrap">
+      <router-link
+        v-if="status === 2"
+        title="发货"
+        :to="{
+          name: 'orders.shipment',
+          params: { id: id }
+        }"
+        class="hover:opacity-75 font-bold inline-block text-xs text-blue-500 mr-2"
       >
-    </div>
-    <div class="flex mt-1" v-if="status === 3">
-      <el-link type="primary" @click="toLogistics" :underline="false"
-        >查看物流</el-link
+        发货
+      </router-link>
+      <router-link
+        v-if="status === 3"
+        title="查看物流"
+        :to="{
+          name: 'orders.logistics',
+          params: { id: id }
+        }"
+        class="hover:opacity-75 font-bold inline-block text-xs text-blue-500 mr-2"
       >
+        查看物流
+      </router-link>
+      <router-link
+        v-if="hasRefund"
+        title="退款详情"
+        :to="{
+          name: 'orders.refund',
+          params: { id: id }
+        }"
+        class="hover:opacity-75 font-bold inline-block text-xs text-blue-500 mr-2"
+      >
+        有退款
+      </router-link>
     </div>
   </div>
 </template>
@@ -22,19 +47,7 @@ export default {
   props: ['resourceName', 'field'],
 
   data() {
-    return {
-      statusMap: [
-        { name: '已取消', value: -1 },
-        { name: '待付款', value: 0 },
-        { name: '已付款', value: 1 },
-        { name: '待发货', value: 2 },
-        { name: '待收货', value: 3 },
-        { name: '已完成', value: 4 },
-        { name: '待评价', value: 5 },
-
-        { name: 'N/A', value: null }
-      ]
-    }
+    return {}
   },
 
   methods: {
@@ -62,36 +75,21 @@ export default {
       return _.get(this.field, 'value.status', null)
     },
     warpClass() {
-      let statusClass = ['rounded-full w-2 h-2 mr-2']
-      switch (this.status) {
-        case -1:
-          statusClass.push('bg-gray-400')
-          break
-        case 0:
-          statusClass.push('bg-yellow-400')
-          break
-        case 1:
-          statusClass.push('bg-blue-400')
-          break
-        case 2:
-          statusClass.push('bg-red-400')
-          break
-        case 3:
-          statusClass.push('bg-green-200')
-          break
-        case 4:
-          statusClass.push('bg-green-300')
-          break
-        case 5:
-          statusClass.push('bg-green-400')
-          break
-        default:
-          statusClass.push('bg-gray-400')
-      }
-      return statusClass
+      return [
+        'rounded-full w-2 h-2 mr-2',
+        _.get(this, 'statusObject.class', 'bg-gray-400')
+      ]
+    },
+    statusObject() {
+      return _.find(this.appConfig.order_status, ['value', this.status])
     },
     value() {
-      return _.find(this.statusMap, ['value', this.status]).name
+      return _.get(this, 'statusObject.name', 'N/A')
+    },
+    hasRefund() {
+      return _.get(this, 'field.value.order_items', []).some(
+        item => item.refunding
+      )
     }
   }
 }

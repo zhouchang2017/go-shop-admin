@@ -90,7 +90,7 @@
         >
           Manage
         </a>
-      </nav> -->
+      </nav>
       <div class="ml-auto flex items-center">
         <button class="lg:hidden ml-5 text-gray-400 hover:text-gray-200">
           <svg class="h-5 w-5 fill-current" viewBox="0 0 24 24">
@@ -130,7 +130,7 @@
             />
           </svg>
         </button>
-      </div>
+      </div> -->
     </div>
   </header>
 </template>

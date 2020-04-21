@@ -6,14 +6,26 @@
           <h3 class="text-gray-600 font-medium tracking-wide">
             {{ card.name }}
           </h3>
-          <div class="text-gray-500 text-xs">{{ value.count }}笔</div>
+
+          <div class="text-gray-500 text-xs">
+            <countTo
+              :startVal="startCount"
+              :endVal="value.count"
+              :duration="3000"
+            ></countTo
+            >笔
+          </div>
         </div>
 
         <div class="font-sans flex items-end">
           <div>
-            <span class="text-gray-800 font-semibold text-3xl">{{
-              value.total_amount
-            }}</span>
+            <countTo
+              class="text-gray-800 font-semibold text-3xl"
+              :startVal="startVal"
+              :endVal="value.total_amount"
+              :duration="3000"
+              :decimals="2"
+            ></countTo>
           </div>
         </div>
       </div>
@@ -22,63 +34,34 @@
 </template>
 
 <script>
-import Minimum from '@/utils/minimum'
+import charts from '@/mixins/Charts'
+import countTo from 'vue-count-to'
 
 export default {
-  props: {
-    card: {
-      type: Object,
-      required: true
-    },
-
-    resourceName: {
-      type: String,
-      default: ''
-    },
-
-    resourceId: {
-      type: [Number, String],
-      default: ''
-    },
-
-    lens: {
-      type: String,
-      default: ''
-    }
+  mixins: [charts],
+  components: {
+    countTo
   },
-
-  data: () => ({
-    loading: true,
-    value: 0
-  }),
-
-  mounted() {
-    this.fetch()
-  },
-
-  methods: {
-    fetch() {
-      this.loading = true
-
-      Minimum(axios.get(this.chartsEndpoint)).then(({ data }) => {
-        this.value = data
-        this.loading = false
-      })
-    }
-  },
-
-  computed: {
-    uriKey() {
-      return this.card.uri_key
-    },
-    chartsEndpoint() {
-      if (this.resourceName && this.resourceId) {
-        return `/charts/app/${this.uriKey}/${this.resourceName}/${this.resourceId}`
-      } else if (this.resourceName) {
-        return `/charts/app/${this.uriKey}/${this.resourceName}`
-      } else {
-        return `/charts/app/${this.uriKey}`
+  data() {
+    return {
+      startVal: 0,
+      startCount: 0,
+      value: {
+        total_amount: 0,
+        count: 0
       }
+    }
+  },
+  methods: {
+    setData(data) {
+      let { total_amount, count } = data
+      this.$set(this.value, 'total_amount', Number(total_amount))
+      this.$set(this.value, 'count', count)
+    },
+    setStartValue(value) {
+      let { total_amount, count } = value
+      this.startVal = total_amount
+      this.startCount = count
     }
   }
 }

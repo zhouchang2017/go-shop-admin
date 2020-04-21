@@ -10,12 +10,12 @@
       <post-form :ref="formRef" :value="resource" />
       <div class="flex w-full">
         <div class="ml-auto"></div>
-        <el-button @click="reset">Reset</el-button>
+        <el-button @click="reset">重置</el-button>
         <el-button
           :loading="isWorking"
           @click="submitViaUpdateResource"
           type="primary"
-          >Submit</el-button
+          >提交</el-button
         >
       </div>
     </template>

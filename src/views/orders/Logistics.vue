@@ -81,16 +81,51 @@
                 {{ shipped.track_no }}
               </div>
             </div>
-            <div class="p-3">
-              <el-timeline :reverse="true">
-                <el-timeline-item
-                  v-for="(activity, index) in activities"
-                  :key="index"
-                  :timestamp="activity.timestamp"
-                >
-                  {{ activity.content }}
-                </el-timeline-item>
-              </el-timeline>
+            <div
+              class="p-3"
+              v-if="
+                shipped.track &&
+                  shipped.track.actions &&
+                  shipped.track.actions.length
+              "
+            >
+              <div
+                class="flex text-xs text-gray-500"
+                v-for="(item, index) in shipped.track.actions"
+                :key="index"
+              >
+                <div class="w-1/4 flex flex-col mt-2 items-end">
+                  <div
+                    :class="[index === 0 ? 'text-gray-600' : '']"
+                    class="text-sm"
+                  >
+                    {{ item.action_time | timeDateStr }}
+                  </div>
+                  <div>{{ item.action_time | timeTimeStr }}</div>
+                </div>
+                <div class="w-10 relative">
+                  <!-- 竖线 -->
+                  <div
+                    class="h-full bg-gray-300 absolute top-0"
+                    style="left:15px;width:1px;"
+                  ></div>
+                  <!-- 圆点 -->
+                  <div
+                    :class="[index === 0 ? 'bg-blue-400' : 'bg-gray-300']"
+                    class="w-3 h-3  absolute rounded-full -ml-10 mt-3"
+                    style="left:50px"
+                  ></div>
+                  <!-- 时间戳 -->
+                </div>
+                <div class="w-full flex flex-col mt-2">
+                  <div :class="[index === 0 ? 'text-sm text-gray-700' : '']">
+                    {{ actionTypeToString(item.action_type) }}
+                  </div>
+                  <div :class="[index === 0 ? 'text-gray-700' : '']">
+                    {{ item.action_msg }}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -114,19 +149,16 @@ export default {
       loading: true,
       isWorking: false,
       shops: [],
-      activities: [
-        {
-          content: '活动按期开始',
-          timestamp: '2018-04-15'
-        },
-        {
-          content: '通过审核',
-          timestamp: '2018-04-13'
-        },
-        {
-          content: '创建成功',
-          timestamp: '2018-04-11'
-        }
+      actionTypes: [
+        { value: 100001, desc: '揽件阶段-揽件成功' },
+        { value: 100002, desc: '揽件阶段-揽件失败' },
+        { value: 100003, desc: '揽件阶段-分配业务员' },
+        { value: 200001, desc: '运输阶段-更新运输轨迹' },
+        { value: 300002, desc: '派送阶段-开始派送' },
+        { value: 300003, desc: '派送阶段-签收成功' },
+        { value: 300004, desc: '派送阶段-签收失败' },
+        { value: 400001, desc: '异常阶段-订单取消' },
+        { value: 400002, desc: '异常阶段-订单滞留' }
       ]
     }
   },
@@ -139,6 +171,7 @@ export default {
         await this.getShops()
         await this.getResource()
         this.initResource()
+        this.getTracks()
         this.loading = false
         this.initialLoading = false
       } catch (error) {
@@ -194,6 +227,15 @@ export default {
           console.log(error)
         })
     },
+    getTracks() {
+      this.resource.logistics.forEach(shipped => {
+        axios
+          .get(`/tracks/${shipped.delivery_id}/${shipped.track_no}`)
+          .then(({ data }) => {
+            this.$set(shipped, 'track', data)
+          })
+      })
+    },
     initResource() {
       this.resource.logistics.forEach(shipped => {
         shipped.items.forEach(item => {
@@ -203,6 +245,9 @@ export default {
         let shop = this.shops.find(s => s.id === shipped.items[0].shop_id)
         this.$set(shipped, 'shop', shop)
       })
+    },
+    actionTypeToString(type) {
+      return this.actionTypes.find(item => item.value === type).desc
     }
   },
   computed: {

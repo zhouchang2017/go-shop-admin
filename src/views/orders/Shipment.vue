@@ -315,11 +315,14 @@ export default {
       })
       // 设置缓存
       data.logistics.forEach(shipped => {
+        console.log(shipped)
         let shopId = _.get(shipped, 'items[0].shop_id')
         this.setCacheLogistics(shopId, {
           delivery_id: shipped.delivery_id,
           track_no: shipped.track_no,
-          no_delivery: shipped.no_delivery
+          no_delivery: shipped.no_delivery,
+          waybill_id: shipped.waybill_id,
+          waybill_data: shipped.waybill_data
         })
       })
       return data
@@ -386,6 +389,8 @@ export default {
               delivery_id: this.getCacheLogistics(id, 'delivery_id'),
               track_no: this.getCacheLogistics(id, 'track_no'),
               no_delivery: this.getCacheLogistics(id, 'no_delivery', false),
+              waybill_id: this.getCacheLogistics(id, 'waybill_id', null),
+              waybill_data: this.getCacheLogistics(id, 'waybill_data', null),
               shop_id: id,
               shop: this.shops.find(shop => shop.id === id),
               items: [obj]

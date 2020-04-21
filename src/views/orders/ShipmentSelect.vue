@@ -30,6 +30,7 @@
               @change="
                 $event => onDeliveryChange($event.target.checked, option)
               "
+              :disabled="!!option.waybill_id"
               v-model="option.no_delivery"
             />
 
@@ -37,7 +38,7 @@
             <div>
               <el-select
                 size="mini"
-                :disabled="option.no_delivery"
+                :disabled="option.no_delivery || !!option.waybill_id"
                 v-model="option.delivery_id"
                 placeholder="请选择物流公司"
                 @change="value => cacheValue(value, option)"
@@ -57,7 +58,7 @@
             <div>
               <el-input
                 size="mini"
-                :disabled="option.no_delivery"
+                :disabled="option.no_delivery || !!option.waybill_id"
                 v-model="option.track_no"
                 placeholder="请输入运单号"
                 @change="value => cacheValue(value, option)"

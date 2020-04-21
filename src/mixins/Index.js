@@ -142,7 +142,9 @@ export default {
 
     // 初始化分页步长，从url中
     initializePerPageFromQueryString() {
-      this.perPage = this.$route.query[this.perPageParameter] || this.perPage
+      this.perPage = parseInt(
+        this.$route.query[this.perPageParameter] || this.perPage
+      )
     },
 
     // 更新trashed参数
@@ -322,12 +324,13 @@ export default {
     },
     // 搜索框提示
     searchInputPlaceholder() {
-      return this.searchPlaceholder
-        ? this.searchPlaceholder
+      return _.get(this, '$route.meta.SearchPlaceholder')
+        ? _.get(this, '$route.meta.SearchPlaceholder')
         : this.title
         ? `请输入${this.title}名称`
         : '请输入关键词'
     },
+
     // 表头
     headings() {
       let headings = _.isNil(this.viaHeadings)

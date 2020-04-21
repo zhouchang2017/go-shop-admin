@@ -2,7 +2,7 @@
   <div class="flex flex-col">
     <el-form v-if="panels" :ref="resourceName">
       <form-panel
-        class="mb-8"
+        class="mb-3"
         v-for="panel in panelsWithFields"
         :panel="panel"
         :name="panel.name"
@@ -13,16 +13,15 @@
         :validation-errors="validationErrors"
       />
     </el-form>
-    <div class="mb-6"></div>
-
-    <div class="fixed bottom-0 left-0 w-full sm:pl-64">
-      <div class="flex w-full bg-white p-3">
-        <div class="ml-auto"></div>
-        <el-button @click="reset">Reset</el-button>
-        <el-button @click="submitViaUpdateResource" type="primary"
-          >Update</el-button
-        >
-      </div>
+    <div class="flex w-full">
+      <div class="ml-auto"></div>
+      <el-button @click="reset">重置</el-button>
+      <el-button
+        :loading="isWorking"
+        @click="submitViaUpdateResource"
+        type="primary"
+        >提交</el-button
+      >
     </div>
   </div>
 </template>
@@ -87,47 +86,19 @@ export default {
       } catch (error) {
         this.submittedViaUpdateResource = true
         this.isWorking = false
-
-        if (error.response.status == 422) {
-          console.log(error.response)
+        let message = _.get(
+          error,
+          'response.data.message',
+          'There was a problem submitting the form.'
+        )
+        if (_.get(error, 'response.status') == 422) {
           this.validationErrors = new Errors(error.response.data.errors)
-          this.$message({
-            message: 'There was a problem submitting the form.',
-            type: 'error'
-          })
         }
+        this.$message({
+          message,
+          type: 'error'
+        })
       }
-
-      // this.$refs[this.resourceName].validate(async (valid, err) => {
-      //   if (valid) {
-      //     try {
-      //       const {
-      //         data: { redirect }
-      //       } = await this.updateRequest()
-
-      //       this.$message({
-      //         message: '创建成功',
-      //         type: 'success'
-      //       })
-
-      //       this.$router.push({ path: redirect })
-      //     } catch (error) {
-      //       this.submittedViaUpdateResource = true
-      //       this.isWorking = false
-
-      //       if (error.response.status == 422) {
-      //         console.log(error.response)
-      //         this.validationErrors = new Errors(error.response.data.errors)
-      //         this.$message({
-      //           message: 'There was a problem submitting the form.',
-      //           type: 'error'
-      //         })
-      //       }
-      //     }
-      //   }
-      //   console.log(err)
-      // })
-
       this.submittedViaUpdateResource = true
       this.isWorking = false
     },

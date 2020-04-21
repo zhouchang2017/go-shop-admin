@@ -2,7 +2,7 @@
   <div class="flex flex-col">
     <el-form v-if="panels" :ref="resourceName">
       <form-panel
-        class="mb-8"
+        class="mb-3"
         v-for="panel in panelsWithFields"
         :panel="panel"
         :name="panel.name"
@@ -13,16 +13,15 @@
         :validation-errors="validationErrors"
       />
     </el-form>
-    <div class="mb-6"></div>
-
-    <div class="fixed bottom-0 left-0 w-full sm:pl-64">
-      <div class="flex w-full bg-white p-3">
-        <div class="ml-auto"></div>
-        <el-button @click="reset">Reset</el-button>
-        <el-button @click="submitViaCreateResource" type="primary"
-          >Create</el-button
-        >
-      </div>
+    <div class="flex w-full">
+      <div class="ml-auto"></div>
+      <el-button @click="reset">重置</el-button>
+      <el-button
+        @click="submitViaCreateResource"
+        :loading="isWorking"
+        type="primary"
+        >创建</el-button
+      >
     </div>
   </div>
 </template>
